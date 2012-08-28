@@ -123,7 +123,7 @@ is no implicit conversion from scalar to piddle.
 
 =item *
 
-The type of both piddles must be equal.
+The type of both piddles must be equal if (and only if) EQUAL_TYPES is true.
 
 =item *
 
