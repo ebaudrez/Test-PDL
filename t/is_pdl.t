@@ -3,14 +3,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 38;
+use Test::More tests => 36;
 use Test::Builder::Tester;
 use Test::Exception;
-
-BEGIN {
-	use_ok( 'PDL' ) or BAIL_OUT( 'need PDL' );
-	use_ok( 'Test::PDL' );
-}
+use PDL;
+use Test::PDL;
 
 my ( $got, $expected );
 

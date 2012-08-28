@@ -1,8 +1,6 @@
 package Test::PDL;
 
-=head1 NAME
-
-Test::PDL - Test piddles for equality
+# ABSTRACT: Test piddles for equality
 
 =head1 SYNOPSIS
 
@@ -39,8 +37,6 @@ use PDL::Lite;
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
-our $VERSION = '0.01';
-$VERSION = eval $VERSION;
 
 =head1 DESCRIPTION
 
@@ -294,9 +290,6 @@ sub set_options
 	}
 }
 
-1;
-__END__
-
 =head1 BUGS
 
 None reported so far.
@@ -310,16 +303,6 @@ L<PDL>, L<Test::More>
 Thanks to PDL Porters Joel Berger, Chris Marshall, and David Mertens for
 feedback and improvements.
 
-=head1 AUTHOR
-
-Edward Baudrez C<< <ebaudrez@cpan.org> >>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (c) 2010 -- 2012 Edward Baudrez. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
-
 =cut
 
+1;
