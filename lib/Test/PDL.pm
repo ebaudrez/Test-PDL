@@ -2,7 +2,7 @@ package Test::PDL;
 
 =head1 NAME
 
-Test::PDL - test piddles for equality
+Test::PDL - Test piddles for equality
 
 =head1 SYNOPSIS
 
@@ -37,7 +37,7 @@ use warnings;
 use Test::Builder;
 use PDL::Lite;
 
-use base 'Exporter';
+use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
 our $VERSION = '0.01';
 $VERSION = eval $VERSION;
@@ -85,7 +85,7 @@ without having to worry about the type of the piddle being exactly I<double>
 =cut
 
 our %OPTIONS = (
-	TOLERANCE => 1e-6,
+	TOLERANCE   => 1e-6,
 	EQUAL_TYPES => 0,
 );
 
