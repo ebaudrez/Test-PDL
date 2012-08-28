@@ -42,8 +42,6 @@ our @EXPORT = qw( is_pdl );
 our $VERSION = '0.01';
 $VERSION = eval $VERSION;
 
-my $tb = Test::Builder->new;
-
 =head1 DESCRIPTION
 
 With Test::PDL, you can compare two piddles for equality. The comparison is
@@ -245,6 +243,7 @@ sub is_pdl
 {
 	my ( $got, $expected, $name ) = @_;
 	$name ||= "piddles are equal";
+	my $tb = Test::Builder->new;
 	if( my $reason = _comparison_fails $got, $expected ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
