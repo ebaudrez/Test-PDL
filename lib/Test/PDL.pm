@@ -299,6 +299,11 @@ None reported so far.
 
 L<PDL>, L<Test::More>
 
+=head1 ACKNOWLEDGMENTS
+
+Thanks to PDL Porters Joel Berger, Chris Marshall, and David Mertens for
+feedback and improvements.
+
 =head1 AUTHOR
 
 Edward Baudrez C<< <ebaudrez@cpan.org> >>
