@@ -1,3 +1,4 @@
 .build
 Test-PDL-*.*.tar.gz
 Test-PDL-*.*/
+aux/pod.t

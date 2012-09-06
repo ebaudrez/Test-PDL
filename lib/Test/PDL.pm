@@ -5,7 +5,8 @@ package Test::PDL;
 =head1 SYNOPSIS
 
 	use PDL;
-	use Test::PDL tests => 2;
+	use Test::More tests => 2;
+	use Test::PDL;
 
 	# an example of a test that succeeds
 	$got      = sequence 5;
@@ -23,7 +24,7 @@ package Test::PDL;
 	# not ok 2 - demonstrate the output of a failing test
 	#
 	#   Failed test 'demonstrate the output of a failing test'
-	#   at aux/pod.t line 15.
+	#   at aux/pod.t line 16.
 	#     values do not match
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
