@@ -2,6 +2,9 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - minor bugfixes related to distribution building and hosting on GitHub. No
+   functionality added or changed (Edward Baudrez)
+
 0.02      2012-09-07
 
  - initial version (Edward Baudrez, with feedback and improvements from Joel
