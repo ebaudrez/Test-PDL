@@ -4,6 +4,8 @@ Revision history for Test::PDL
 
  - minor bugfixes related to distribution building and hosting on GitHub. No
    functionality added or changed (Edward Baudrez)
+ - require type equality by default when comparing piddles. If you don't like
+   this behaviour, set the option EQUAL_TYPES to false (Edward Baudrez)
 
 0.02      2012-09-07
 
