@@ -4,6 +4,8 @@ Revision history for Test::PDL
 
  - minor bugfixes related to distribution building and hosting on GitHub. No
    functionality added or changed (Edward Baudrez)
+ - fix the POD documentation to work with the PDL docs database scraper (David
+   Mertens)
 
 0.02      2012-09-07
 
