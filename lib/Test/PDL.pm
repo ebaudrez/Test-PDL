@@ -70,12 +70,14 @@ if the absolute value of their difference is below the tolerance.
 
 If true, only piddles with equal type can be considered equal. If false, the
 types of the piddles being compared is not taken into consideration. Defaults
-to false. The default allows to write tests like
+to true: types must match for the comparison to succeed. If you want to
+write tests like
 
 	is_pdl( $got, pdl([ 1, 3, 5, 6 ]) );
 
 without having to worry about the type of the piddle being exactly I<double>
-(which is the default type of the pdl() constructor).
+(which is the default type of the pdl() constructor), set EQUAL_TYPES equal to
+0.
 
 =back
 
@@ -83,10 +85,40 @@ without having to worry about the type of the piddle being exactly I<double>
 
 our %OPTIONS = (
 	TOLERANCE   => 1e-6,
-	EQUAL_TYPES => 0,
+	EQUAL_TYPES => 1,
 );
 
 =head1 FUNCTIONS
+
+=head2 import
+
+Custom importer that recognizes configuration options specified at use time, as
+in
+
+	use Test::PDL -equal_types => 0;
+
+This invocation is equivalent to
+
+	use Test::PDL;
+	Test::PDL::set_options( EQUAL_TYPES => 0 );
+
+but is arguably somewhat nicer.
+
+=cut
+
+sub import
+{
+	my $i = 0;
+	while( $i < @_ ) {
+		if( $_[ $i ] =~ /^-/ ) {
+			my( $key, $val ) = splice @_, $i, 2;
+			$key =~ s/^-(.*)/\U$1/;
+			set_options( $key, $val );
+		}
+		else { $i++ }
+	}
+	__PACKAGE__->export_to_level( 1, @_ );
+}
 
 =head2 _approx
 
@@ -164,7 +196,7 @@ sub _comparison_fails
 		return 'expected value is not a PDL';
 	}
 	if( $OPTIONS{ EQUAL_TYPES } && $got->type != $expected->type ) {
-		return 'types do not match';
+		return 'types do not match (EQUAL_TYPES is true)';
 	}
 	if( $got->ndims != $expected->ndims ) {
 		return 'dimensions do not match in number';

@@ -64,16 +64,32 @@ if the absolute value of their difference is below the tolerance.
 
 If true, only piddles with equal type can be considered equal. If false, the
 types of the piddles being compared is not taken into consideration. Defaults
-to false. The default allows to write tests like
+to true: types must match for the comparison to succeed. If you want to
+write tests like
 
 	is_pdl( $got, pdl([ 1, 3, 5, 6 ]) );
 
 without having to worry about the type of the piddle being exactly I<double>
-(which is the default type of the pdl() constructor).
+(which is the default type of the pdl() constructor), set EQUAL_TYPES equal to
+0.
 
 =back
 
 =head1 FUNCTIONS
+
+=head2 import
+
+Custom importer that recognizes configuration options specified at use time, as
+in
+
+	use Test::PDL -equal_types => 0;
+
+This invocation is equivalent to
+
+	use Test::PDL;
+	Test::PDL::set_options( EQUAL_TYPES => 0 );
+
+but is arguably somewhat nicer.
 
 =head2 _approx
 

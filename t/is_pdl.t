@@ -27,6 +27,7 @@ test_err( '/#\s+received value is not a PDL\n(.|\n)*/' );
 is_pdl( $got, $expected );
 test_test( 'rejects non-PDL arguments' );
 
+Test::PDL::set_options( EQUAL_TYPES => 0 );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
 test_out( "ok 1 - piddles are equal" );
@@ -38,7 +39,7 @@ $expected = long( 3,4 );
 $got = pdl( 3,4 );
 test_out( "not ok 1 - piddles are equal" );
 test_fail( +2 );
-test_err( '/#\s+types do not match\n(.|\n)*/' );
+test_err( '/#\s+types do not match \(EQUAL_TYPES is true\)\n(.|\n)*/' );
 is_pdl( $got, $expected );
 test_test( 'catches type mismatch, but only when EQUAL_TYPES is true' );
 Test::PDL::set_options( EQUAL_TYPES => 0 );
