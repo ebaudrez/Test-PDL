@@ -90,6 +90,36 @@ our %OPTIONS = (
 
 =head1 FUNCTIONS
 
+=head2 import
+
+Custom importer that recognizes configuration options specified at use time, as
+in
+
+	use Test::PDL -equal_types => 0;
+
+This invocation is equivalent to
+
+	use Test::PDL;
+	Test::PDL::set_options( EQUAL_TYPES => 0 );
+
+but is arguably somewhat nicer.
+
+=cut
+
+sub import
+{
+	my $i = 0;
+	while( $i < @_ ) {
+		if( $_[ $i ] =~ /^-/ ) {
+			my( $key, $val ) = splice @_, $i, 2;
+			$key =~ s/^-(.*)/\U$1/;
+			set_options( $key, $val );
+		}
+		else { $i++ }
+	}
+	__PACKAGE__->export_to_level( 1, @_ );
+}
+
 =head2 _approx
 
 Internal function reimplementing the functionality of PDL::approx(), but with a

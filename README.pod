@@ -77,6 +77,20 @@ without having to worry about the type of the piddle being exactly I<double>
 
 =head1 FUNCTIONS
 
+=head2 import
+
+Custom importer that recognizes configuration options specified at use time, as
+in
+
+	use Test::PDL -equal_types => 0;
+
+This invocation is equivalent to
+
+	use Test::PDL;
+	Test::PDL::set_options( EQUAL_TYPES => 0 );
+
+but is arguably somewhat nicer.
+
 =head2 _approx
 
 Internal function reimplementing the functionality of PDL::approx(), but with a

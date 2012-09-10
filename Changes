@@ -4,8 +4,16 @@ Revision history for Test::PDL
 
  - minor bugfixes related to distribution building and hosting on GitHub. No
    functionality added or changed (Edward Baudrez)
+ - allow setting module options at use time:
+      use Test::PDL -option => $value;
+   Only options that would be accepted by Test::PDL::set_options() are allowed.
+   Note that you must use the lowercased option name, preceded by a dash, when
+   setting options this way. (Edward Baudrez)
  - require type equality by default when comparing piddles. If you don't like
-   this behaviour, set the option EQUAL_TYPES to false (Edward Baudrez)
+   this behaviour, set the option EQUAL_TYPES to false, or use Test::PDL as
+   follows:
+      use Test::PDL -equal_types => 0;
+   (Edward Baudrez)
 
 0.02      2012-09-07
 

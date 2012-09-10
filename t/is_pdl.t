@@ -3,17 +3,13 @@
 use strict;
 use warnings;
 
-use Test::More tests => 38;
+use Test::More tests => 36;
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
 use Test::PDL;
 
 my ( $got, $expected );
-
-# check that the defaults are as advertised
-cmp_ok( abs( $Test::PDL::OPTIONS{TOLERANCE}/1e-6 - 1 ), '<', 1e-6, 'TOLERANCE is 1e-6 by default' );
-is( $Test::PDL::OPTIONS{EQUAL_TYPES}, 1, 'EQUAL_TYPES is true by default' );
 
 $expected = 3;
 $got = long( 3,4 );
