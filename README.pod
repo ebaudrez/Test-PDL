@@ -143,13 +143,12 @@ function.
 
 =head2 is_pdl
 
-=for ref Run a test comparing a piddle to an expected piddle, and fail with detailed
-diagnostics if they don't compare equal.
-
-=for usage is_pdl( $got, $expected, $test_name );
+=for ref # PDL
 
 Run a test comparing a piddle to an expected piddle, and fail with detailed
 diagnostics if they don't compare equal.
+
+=for usage # PDL
 
 	is_pdl( $got, $expected, $test_name );
 
@@ -163,12 +162,11 @@ Named after is() from L<Test::More>.
 
 =head2 set_options
 
-=for ref Configure the comparison carried out by is_pdl().
-
-=for example # e.g., if a tolerance of 1e-6 is too tight
-	Test::PDL::set_options( TOLERANCE => 1e-4 );
+=for ref # PDL
 
 Configure the comparison carried out by is_pdl().
+
+=for example # PDL
 
 	# e.g., if a tolerance of 1e-6 is too tight
 	Test::PDL::set_options( TOLERANCE => 1e-4 );

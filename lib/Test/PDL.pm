@@ -217,12 +217,12 @@ sub _dimensions_match
 
 =head2 is_pdl
 
-=for ref
+=for ref # PDL
 
 Run a test comparing a piddle to an expected piddle, and fail with detailed
 diagnostics if they don't compare equal.
 
-=for usage
+=for usage # PDL
 
 	is_pdl( $got, $expected, $test_name );
 
@@ -256,11 +256,11 @@ sub is_pdl
 
 =head2 set_options
 
-=for ref
+=for ref # PDL
 
 Configure the comparison carried out by is_pdl().
 
-=for example
+=for example # PDL
 
 	# e.g., if a tolerance of 1e-6 is too tight
 	Test::PDL::set_options( TOLERANCE => 1e-4 );
