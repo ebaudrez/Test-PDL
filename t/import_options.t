@@ -1,8 +1,9 @@
 use strict;
 use warnings;
-use Test::More tests => 13;
+use Test::More tests => 14;
 use Test::Deep;
 use Test::Exception;
+use Test::NoWarnings;
 
 # force reloading Test::PDL on next 'require' + wipe functions living in the
 # Test::PDL namespace to avoid redefinition warnings

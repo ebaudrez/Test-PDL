@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 36;
+use Test::More tests => 37;
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
 use Test::PDL;
+use Test::NoWarnings;
 
 my ( $got, $expected );
 

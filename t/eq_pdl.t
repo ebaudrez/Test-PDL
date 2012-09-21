@@ -1,8 +1,9 @@
 use strict;
 use warnings;
-use Test::More tests => 33;
+use Test::More tests => 34;
 use PDL;
 use Test::PDL qw( eq_pdl );
+use Test::NoWarnings;
 
 my ( $got, $expected );
 
