@@ -10,7 +10,8 @@ sub wipe
 {
 	delete $INC{ 'Test/PDL.pm' };
 	delete $Test::PDL::{ $_ } for qw( import _approx _comparison_fails
-					  _dimensions_match is_pdl set_options );
+					  _dimensions_match eq_pdl is_pdl
+					  set_options );
 }
 
 # we should start out without an 'is_pdl' function

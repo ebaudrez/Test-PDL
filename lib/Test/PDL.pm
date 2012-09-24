@@ -38,6 +38,7 @@ use PDL::Lite;
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
+our @EXPORT_OK = qw( eq_pdl is_pdl );
 
 =head1 DESCRIPTION
 
@@ -47,13 +48,14 @@ patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
 
-Test::PDL exports only one function: is_pdl().
+By default, Test::PDL exports only one function: is_pdl(). The function
+eq_pdl() can be exported on demand.
 
 =head1 VARIABLES
 
 =head2 %OPTIONS
 
-The comparison criteria used by is_pdl() can be configured by setting the
+The comparison criteria used by Test::PDL can be configured by setting the
 values in the %OPTIONS hash. This can be done directly, by addressing
 %Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
 used instead.
@@ -286,11 +288,35 @@ sub is_pdl
 	}
 }
 
+=head2 eq_pdl
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise.
+
+=for usage # PDL
+
+	my $equal = eq_pdl( $got, $expected );
+
+eq_pdl() contains just the comparison part of is_pdl(), without the
+infrastructure required to write tests with Test::More. It could be used as
+part of a larger test in which the equality of two piddles must be verified. By
+itself, eq_pdl() does not generate any output, so it should be safe to use
+outside test suites.
+
+=cut
+
+sub eq_pdl
+{
+	my ( $got, $expected ) = @_;
+	return !_comparison_fails( $got, $expected );
+}
+
 =head2 set_options
 
 =for ref # PDL
 
-Configure the comparison carried out by is_pdl().
+Configure the comparison carried out by Test::PDL's testing functions.
 
 =for example # PDL
 
