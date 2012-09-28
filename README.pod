@@ -4,7 +4,7 @@ Test::PDL - Test piddles for equality
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -41,13 +41,14 @@ patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
 
-Test::PDL exports only one function: is_pdl().
+By default, Test::PDL exports only one function: is_pdl(). The functions
+eq_pdl() and eq_pdl_diag() are exported on demand only.
 
 =head1 VARIABLES
 
 =head2 %OPTIONS
 
-The comparison criteria used by is_pdl() can be configured by setting the
+The comparison criteria used by Test::PDL can be configured by setting the
 values in the %OPTIONS hash. This can be done directly, by addressing
 %Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
 used instead.
@@ -176,11 +177,45 @@ criteria. $test_name is optional.
 
 Named after is() from L<Test::More>.
 
+=head2 eq_pdl
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise.
+
+=for usage # PDL
+
+	my $equal = eq_pdl( $got, $expected );
+
+eq_pdl() contains just the comparison part of is_pdl(), without the
+infrastructure required to write tests with Test::More. It could be used as
+part of a larger test in which the equality of two piddles must be verified. By
+itself, eq_pdl() does not generate any output, so it should be safe to use
+outside test suites.
+
+=head2 eq_pdl_diag
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise, and the reason why
+the comparison failed (if it did).
+
+=for usage # PDL
+
+	my( $ok ) = eq_pdl_diag( $got, $expected );
+	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+
+eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
+comparison failed (if it failed). $diag will be false if the comparison
+succeeds. Does not need L<Test::Builder>, so you can use it as part of
+something else, without side effects (like generating output). It was written
+to support deep comparisons with L<Test::Deep>.
+
 =head2 set_options
 
 =for ref # PDL
 
-Configure the comparison carried out by is_pdl().
+Configure the comparison carried out by Test::PDL's testing functions.
 
 =for example # PDL
 
@@ -202,7 +237,7 @@ None reported so far.
 
 =head1 SEE ALSO
 
-L<PDL>, L<Test::More>
+L<PDL>, L<Test::More>, L<Test::PDL::Deep>
 
 =head1 ACKNOWLEDGMENTS
 
