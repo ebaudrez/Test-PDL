@@ -33,7 +33,6 @@ package Test::PDL;
 
 use strict;
 use warnings;
-use Test::Builder;
 use PDL::Lite;
 
 use base qw( Exporter );
@@ -272,6 +271,7 @@ Named after is() from L<Test::More>.
 
 sub is_pdl
 {
+	require Test::Builder;
 	my ( $got, $expected, $name ) = @_;
 	$name ||= "piddles are equal";
 	my $tb = Test::Builder->new;
