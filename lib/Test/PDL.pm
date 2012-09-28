@@ -37,7 +37,7 @@ use PDL::Lite;
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
-our @EXPORT_OK = qw( eq_pdl is_pdl );
+our @EXPORT_OK = qw( eq_pdl eq_pdl_diag is_pdl );
 
 =head1 DESCRIPTION
 
@@ -47,8 +47,8 @@ patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
 
-By default, Test::PDL exports only one function: is_pdl(). The function
-eq_pdl() can be exported on demand.
+By default, Test::PDL exports only one function: is_pdl(). The functions
+eq_pdl() and eq_pdl_diag() are exported on demand only.
 
 =head1 VARIABLES
 
@@ -312,6 +312,34 @@ sub eq_pdl
 	return !_comparison_fails( $got, $expected );
 }
 
+=head2 eq_pdl_diag
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise, and the reason why
+the comparison failed (if it did).
+
+=for usage # PDL
+
+	my( $ok ) = eq_pdl_diag( $got, $expected );
+	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+
+eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
+comparison failed (if it failed). $diag will be false if the comparison
+succeeds. Does not need L<Test::Builder>, so you can use it as part of
+something else, without side effects (like generating output). It was written
+to support deep comparisons with L<Test::Deep>.
+
+=cut
+
+sub eq_pdl_diag
+{
+	my ( $got, $expected ) = @_;
+	my $reason = _comparison_fails( $got, $expected );
+	if( $reason ) { return 0, $reason }
+	else { return 1 }
+}
+
 =head2 set_options
 
 =for ref # PDL
@@ -349,7 +377,7 @@ None reported so far.
 
 =head1 SEE ALSO
 
-L<PDL>, L<Test::More>
+L<PDL>, L<Test::More>, L<Test::PDL::Deep>
 
 =head1 ACKNOWLEDGMENTS
 

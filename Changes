@@ -5,6 +5,10 @@ Revision history for Test::PDL
  - added a function eq_pdl() to compare two piddles, without performing an
    actual test. If you've been wanting to compare two piddles outside of a test
    suite, now you can (Edward Baudrez)
+ - added a function eq_pdl_diag() that, in addition to comparing two piddles,
+   also returns the reason for failure, if any. It was written to support deep
+   comparisons with Test::Deep, but you may find other uses for it, too (Edward
+   Baudrez)
 
 0.03      2012-09-10
 
