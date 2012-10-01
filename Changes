@@ -9,6 +9,14 @@ Revision history for Test::PDL
    also returns the reason for failure, if any. It was written to support deep
    comparisons with Test::Deep, but you may find other uses for it, too (Edward
    Baudrez)
+ - added a function test_pdl() which hides a constructor call for an object
+   that can make 'special comparisons': those are useful when comparing piddles
+   inside data structures with Test::Deep. E.g.,
+      my $expected = {
+         data => test_pdl( -3,9.99,2 ),
+      };
+      cmp_deeply function_returning_hashref(), $expected;
+   See the documentation of test_pdl() for more details (Edward Baudrez)
 
 0.03      2012-09-10
 

@@ -5,8 +5,8 @@ package Test::PDL;
 =head1 SYNOPSIS
 
 	use PDL;
-	use Test::More tests => 2;
-	use Test::PDL;
+	use Test::More tests => 3;
+	use Test::PDL qw( is_pdl :deep );
 
 	# an example of a test that succeeds
 	$got      = sequence 5;
@@ -29,6 +29,21 @@ package Test::PDL;
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
 
+	# piddles within other data structures can be tested with Test::Deep
+	use Test::Deep qw( cmp_deeply );
+	$got      = { name => 'Histogram', data => long( 17,0,1 ) };
+	$expected = { name => 'Histogram', data => test_long( 17,0,0,1 ) };
+	cmp_deeply( $got, $expected, 'demonstrate the output of a failing deep comparison' );
+	#   OUTPUT:
+	# not ok 3 - demonstrate the output of a failing deep comparison
+	#
+	#   Failed test 'demonstrate the output of a failing deep comparison'
+	#   at aux/pod.t line 30.
+	# Comparing $data->{"data"} as a piddle:
+	# dimensions do not match in extent
+	#    got : Long     D [3]        (P    ) [17 0 1]
+	# expect : Long     D [4]        (P    ) [17 0 0 1]
+
 =cut
 
 use strict;
@@ -37,7 +52,8 @@ use PDL::Lite;
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
-our @EXPORT_OK = qw( eq_pdl eq_pdl_diag is_pdl );
+our @EXPORT_OK = qw( eq_pdl eq_pdl_diag is_pdl test_pdl );
+our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 
 =head1 DESCRIPTION
 
@@ -47,8 +63,8 @@ patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
 
-By default, Test::PDL exports only one function: is_pdl(). The functions
-eq_pdl() and eq_pdl_diag() are exported on demand only.
+By default, Test::PDL exports only one function: is_pdl(). The other functions
+are exported on demand only.
 
 =head1 VARIABLES
 
@@ -340,6 +356,95 @@ sub eq_pdl_diag
 	else { return 1 }
 }
 
+=head2 test_pdl
+
+=for ref # PDL
+
+Special comparison to be used in conjunction with L<Test::Deep> to test piddles
+inside data structures.
+
+=for usage # PDL
+
+	my $expected = { ..., some_field => test_pdl( 1,2,-7 ), ... };
+	my $expected = [ ..., test_short( 1,2,-7 ), ... ];
+
+Suppose you want to compare data structures that happen to contain piddles. You
+use is_deeply() (from L<Test::More>) or cmp_deeply() (from L<Test::Deep>) to
+compare the structures element by element. Unfortunately, you cannot just write
+
+	my $got = my_sub( ... );
+	my $expected = {
+		...,
+		some_field => pdl( ... ),
+		...
+	};
+	is_deeply $got, $expected;
+
+Neither does cmp_deeply() work in the same situation. is_deeply() tries to
+compare the piddles using the (overloaded) C<==> comparison operator, which
+doesn't work. It simply dies with an error message saying that multidimensional
+piddles cannot be compared, whereas cmp_deeply() performs only a shallow
+comparison of the references.
+
+What you need is a special comparison, which is provided by this function, to
+be used with cmp_deeply(). You need to rewrite $expected as follows
+
+	my $expected = {
+		...,
+		some_field => test_pdl( ... ),
+		...
+	};
+	cmp_deeply $got, $expected;
+
+Note that you need to write test_pdl() instead of pdl(). You could achieve the
+same thing with
+
+	my $expected = {
+		...,
+		some_field => code( sub { eq_pdl_diag( shift, pdl( ... ) ) } ),
+		...
+	};
+
+but the diagnostics provided by test_pdl() are better, and it's easier to use.
+test_pdl() accepts the same arguments as the PDL constructor pdl() does. If you
+need to compare a piddle with a type different from the default type, use one
+of the provided test_byte(), test_short(), test_long(), etc.:
+
+	my $expected = { data => test_short( -4,-9,13 ) };
+
+=cut
+
+sub test_pdl
+{
+	require Test::Deep::PDL;
+	my $expected = pdl( @_ );
+	return Test::Deep::PDL->new( $expected );
+}
+
+=for Pod::Coverage test_byte test_short test_ushort test_long test_longlong
+test_float test_double
+
+=cut
+
+for my $type ( qw/byte short ushort long longlong float double/ ) {
+	my $ctor = do {
+		local *slot = $PDL::{ $type };
+		*slot{CODE}
+	};
+	my $sub = sub {
+		require Test::Deep::PDL;
+		my $expected = $ctor->( @_ );
+		return Test::Deep::PDL->new( $expected );
+	};
+	my $sub_name = 'test_' . $type;
+	{
+		no strict 'refs';
+		*$sub_name = $sub;
+	}
+	push @EXPORT_OK, $sub_name;
+	push @{ $EXPORT_TAGS{deep} }, $sub_name;
+}
+
 =head2 set_options
 
 =for ref # PDL
@@ -377,7 +482,7 @@ None reported so far.
 
 =head1 SEE ALSO
 
-L<PDL>, L<Test::More>, L<Test::PDL::Deep>
+L<PDL>, L<Test::More>, L<Test::Deep>, L<Test::PDL::Deep>
 
 =head1 ACKNOWLEDGMENTS
 

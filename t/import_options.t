@@ -10,9 +10,10 @@ use Test::NoWarnings;
 sub wipe
 {
 	delete $INC{ 'Test/PDL.pm' };
-	delete $Test::PDL::{ $_ } for qw( import _approx _comparison_fails
-					  _dimensions_match eq_pdl eq_pdl_diag
-					  is_pdl set_options );
+	delete $Test::PDL::{ $_ } for qw( _approx _comparison_fails
+		_dimensions_match eq_pdl eq_pdl_diag import is_pdl set_options
+		test_byte test_double test_float test_long test_longlong
+		test_pdl test_short test_ushort );
 }
 
 # we should start out without an 'is_pdl' function
