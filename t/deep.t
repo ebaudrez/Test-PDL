@@ -1,16 +1,18 @@
 use strict;
 use warnings;
-use Test::More tests => 31;
+use Test::More tests => 87;
 use Test::Deep;
 use Test::PDL qw( :deep eq_pdl eq_pdl_diag );
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
 
+my @types = qw( byte short ushort long longlong float double );
+
 isa_ok test_pdl( 1,2,3 ), 'Test::Deep::PDL';
-for my $name ( qw( byte short ushort long longlong float double ) ) {
+for my $type ( @types ) {
 	no strict 'refs';
-	my $sub = "test_$name";
+	my $sub = "test_$type";
 	isa_ok $sub->( 1,2,3 ), 'Test::Deep::PDL';
 }
 
@@ -54,41 +56,50 @@ for my $name ( qw( byte short ushort long longlong float double ) ) {
 	test_test 'but shallow reference comparison is not powerful enough';
 }
 
-{
-	my @vals = ( 9,9,9,9 );
-	my $got = { data => pdl( @vals ) };
-	my $expected = { data => test_pdl( @vals ) };
-	test_out 'ok 1';
-	cmp_deeply $got, $expected;
-	test_test 'succeeds when it should succeed, with values supplied (default type)';
-	test_out 'ok 1';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, pdl(@vals) } ) };
-	test_test '... and it\'s the same thing as using code()';
-}
+=pod
 
-{
-	my $pdl1 = short( -9,-9,-9,-9 );
-	my $pdl2 = $pdl1;
-	ok eq_pdl( $pdl1, $pdl2 ), 'pdls are equal to begin with';
-	my $got = { data => $pdl1 };
-	my $expected = { data => test_pdl( $pdl2 ) };
-	test_out 'ok 1';
-	cmp_deeply $got, $expected;
-	test_test 'succeeds when it should succeed, with pdl supplied';
-	test_out 'ok 1';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
-	test_test '... and it\'s the same thing as using code()';
-}
+The following test code may be a bit hard to follow. We're basically trying to
+ensure that
 
-{
-	my $got = { data => short( -9,-9,-9,-9 ) };
-	my $expected = { data => test_short( -9,-9,-9,-9 ) };
-	test_out 'ok 1';
+	my @vals     = ( ... );
+	my $got      = { data => long( @vals ) };
+	my $expected = { data => test_long( @vals ) };
 	cmp_deeply $got, $expected;
-	test_test 'succeeds when it should succeed, with pdl supplied inline';
-	test_out 'ok 1';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, short(-9,-9,-9,-9) } ) };
-	test_test '... and it\'s the same thing as using code()';
+
+passes for every conceivable type of piddle (not only I<long>), and for
+different sets of values @vals, some of which may contain bad values. We also
+test that
+
+	{ data => test_long( @vals ) }
+	{ data => test_pdl( long(@vals) ) }
+	{ data => code( sub { eq_pdl_diag shift, long(@vals) } ) }
+
+yield the same results.
+
+=cut
+
+for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
+	for my $type ( @types ) {
+		my @vals      = @$vals;
+		my $ctor      = do { local *slot = $PDL::{ $type }; *slot{CODE} };
+		my $tester    = do { local *slot = $Test::PDL::{ 'test_' . $type }; *slot{CODE} };
+		my $pdl       = $ctor->( @vals )->inplace->setvaltobad( 99 );
+		note 'test with pdl = ', $pdl->info('%-8T'), ' ', $pdl;
+		my $got       = { data => $pdl };
+		my $expected1 = { data => $tester->( @vals ) };
+		$expected1->{data}->{expected}->inplace->setvaltobad( 99 );
+		test_out 'ok 1';
+		cmp_deeply $got, $expected1;
+		test_test 'succeeds when it should succeed, with pdl supplied as values';
+		my $expected2 = { data => test_pdl( $pdl ) };
+		test_out 'ok 1';
+		cmp_deeply $got, $expected2;
+		test_test '... also when pdl is supplied directly';
+		my $expected3 = { data => code( sub { eq_pdl_diag shift, $pdl } ) };
+		test_out 'ok 1';
+		cmp_deeply $got, $expected3;
+		test_test '... and it\'s the same thing as using code()';
+	}
 }
 
 {
