@@ -282,6 +282,19 @@ of the provided test_byte(), test_short(), test_long(), etc.:
 
 	my $expected = { data => test_short( -4,-9,13 ) };
 
+If you need to manipulate the expected value, you should keep in mind that the
+return value of test_pdl() and the like are not piddles. Therefore, in-place
+modification of the expected value won't work:
+
+	my $expected = { data => test_short( -99,-9,13 )->inplace->setvaltobad( -99 ) }; # won't work!
+
+You should rather do
+
+	my $expected = { data => test_pdl( short(-99,-9,13)->inplace->setvaltobad(-99) ) };
+
+test_pdl() will correctly set the type of the expected value to I<short> in the
+above example.
+
 =for Pod::Coverage test_byte test_short test_ushort test_long test_longlong
 test_float test_double
 
