@@ -90,11 +90,11 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		$expected1->{data}->{expected}->inplace->setvaltobad( 99 );
 		test_out 'ok 1';
 		cmp_deeply $got, $expected1;
-		test_test 'succeeds when it should succeed, with pdl supplied as values';
+		test_test 'succeeds when it should succeed, with piddle supplied as values';
 		my $expected2 = { data => test_pdl( $pdl ) };
 		test_out 'ok 1';
 		cmp_deeply $got, $expected2;
-		test_test '... also when pdl is supplied directly';
+		test_test '... also when piddle is supplied directly';
 		my $expected3 = { data => code( sub { eq_pdl_diag shift, $pdl } ) };
 		test_out 'ok 1';
 		cmp_deeply $got, $expected3;
@@ -105,13 +105,13 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 {
 	my $pdl1 = 2;
 	my $pdl2 = pdl( 3,4,9.999 );
-	ok !eq_pdl( $pdl1, $pdl2 ), 'pdls are unequal to begin with';
+	ok !eq_pdl( $pdl1, $pdl2 ), 'piddles are unequal to begin with';
 	my $got = { data => $pdl1 };
 	my $expected = { data => test_pdl( $pdl2 ) };
 	test_out 'not ok 1';
 	test_fail +5;
 	test_diag 'Comparing $data->{"data"} as a piddle:',
-		  'received value is not a PDL';
+		  'received value is not a piddle';
 	test_err  "/#    got : \\('2'\\)/",
 		  '/# expect : Double\s+D\s+\[3\].*/';
 	cmp_deeply $got, $expected;
@@ -122,7 +122,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		  '',
 		  "'2'",
 		  'and it said',
-		  'received value is not a PDL';
+		  'received value is not a piddle';
 	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }
@@ -130,7 +130,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 {
 	my $pdl1 = pdl( 3,4,9.999 );
 	my $pdl2 = pdl( 3,4,10 );
-	ok !eq_pdl( $pdl1, $pdl2 ), 'pdls are unequal to begin with';
+	ok !eq_pdl( $pdl1, $pdl2 ), 'piddles are unequal to begin with';
 	my $got = { data => $pdl1 };
 	my $expected = { data => test_pdl( $pdl2 ) };
 	test_out 'not ok 1';
@@ -155,7 +155,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 {
 	my $pdl1 = short( 3,4,-6 );
 	my $pdl2 = long( 3,4,10 );
-	ok !eq_pdl( $pdl1, $pdl2 ), 'pdls are unequal to begin with';
+	ok !eq_pdl( $pdl1, $pdl2 ), 'piddles are unequal to begin with';
 	my $got = { data => $pdl1 };
 	my $expected = { data => test_pdl( $pdl2 ) };
 	test_out 'not ok 1';

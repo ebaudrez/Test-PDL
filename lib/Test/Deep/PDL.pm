@@ -23,7 +23,7 @@ sub init
 {
 	my $self = shift;
 	my $expected = shift;
-	die "Supplied value is not a valid PDL" unless eval { $expected->isa('PDL') };
+	die "Supplied value is not a piddle" unless eval { $expected->isa('PDL') };
 	$self->{expected} = $expected;
 }
 

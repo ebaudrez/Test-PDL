@@ -13,15 +13,15 @@ ok !eq_pdl( $got ), 'rejects missing arguments';
 
 $expected = 3;
 $got = 4;
-ok !eq_pdl( $got, $expected ), 'rejects non-PDL arguments';
+ok !eq_pdl( $got, $expected ), 'rejects non-piddle arguments';
 
 $expected = 3;
 $got = long( 3,4 );
-ok !eq_pdl( $got, $expected ), 'rejects non-PDL arguments';
+ok !eq_pdl( $got, $expected ), 'rejects non-piddle arguments';
 
 $expected = short( 1,2 );
 $got = -2;
-ok !eq_pdl( $got, $expected ), 'rejects non-PDL arguments';
+ok !eq_pdl( $got, $expected ), 'rejects non-piddle arguments';
 
 Test::PDL::set_options( EQUAL_TYPES => 0 );
 $expected = long( 3,4 );

@@ -209,10 +209,10 @@ sub _comparison_fails
 {
 	my ( $got, $expected ) = @_;
 	if( not eval { $got->isa('PDL') } ) {
-		return 'received value is not a PDL';
+		return 'received value is not a piddle';
 	}
 	if( not eval { $expected->isa('PDL') } ) {
-		return 'expected value is not a PDL';
+		return 'expected value is not a piddle';
 	}
 	if( $OPTIONS{ EQUAL_TYPES } && $got->type != $expected->type ) {
 		return 'types do not match (EQUAL_TYPES is true)';
