@@ -1,6 +1,6 @@
 package Test::PDL;
 
-# ABSTRACT: Test piddles for equality
+# ABSTRACT: Test Perl Data Language arrays (a.k.a. piddles) for equality
 
 =head1 SYNOPSIS
 
@@ -62,6 +62,8 @@ performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
+
+Test::PDL is to be used with the Perl Data Language (L<PDL>).
 
 By default, Test::PDL exports only one function: is_pdl(). The other functions
 are exported on demand only.
