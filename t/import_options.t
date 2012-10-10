@@ -30,7 +30,7 @@ require Test::PDL;
 ::wipe;
 
 # use Test::PDL;
-package t1;
+package t2;
 require Test::PDL;
 Test::PDL->import();
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -41,7 +41,7 @@ Test::PDL->import();
 ::wipe;
 
 # use Test::PDL -equal_types => 0;
-package t2;
+package t3;
 require Test::PDL;
 Test::PDL->import( -equal_types => 0 );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -52,7 +52,7 @@ Test::PDL->import( -equal_types => 0 );
 ::wipe;
 
 # use Test::PDL -tolerance => 1e-8;
-package t3;
+package t4;
 require Test::PDL;
 Test::PDL->import( -tolerance => 1e-8 );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -63,7 +63,7 @@ Test::PDL->import( -tolerance => 1e-8 );
 ::wipe;
 
 # use Test::PDL -tolerance => 1e-8, -equal_types => 0, 'is_pdl';
-package t4;
+package t5;
 require Test::PDL;
 Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -74,7 +74,7 @@ Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
 ::wipe;
 
 # use Test::PDL -whatever => 42;
-package t5;
+package t6;
 require Test::PDL;
 ::throws_ok { Test::PDL->import( -whatever => 42 ) } qr/\binvalid option WHATEVER\b/;
 ::ok ! __PACKAGE__->can( 'is_pdl' );
