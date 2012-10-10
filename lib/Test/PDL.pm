@@ -66,7 +66,9 @@ Test::PDL is mostly useful in test scripts.
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
 
 By default, Test::PDL exports only one function: is_pdl(). The other functions
-are exported on demand only.
+are exported on demand only. The export tag C<:deep> exports test_pdl() and one
+function for each PDL type constructor (like short(), double(), etc.), prefixed
+with C<test_>: test_short(), test_double(), ...
 
 =head1 VARIABLES
 
