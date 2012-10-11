@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.04      2012-10-11
+
  - added a function eq_pdl() to compare two piddles, without performing an
    actual test. If you've been wanting to compare two piddles outside of a test
    suite, now you can (Edward Baudrez)
