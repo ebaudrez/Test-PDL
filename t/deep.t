@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test::More tests => 87;
-use Test::Deep;
+use Test::Deep qw( cmp_deeply code );
 use Test::PDL qw( :deep eq_pdl eq_pdl_diag );
 use Test::Builder::Tester;
 use Test::Exception;
