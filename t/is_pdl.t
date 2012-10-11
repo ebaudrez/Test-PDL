@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 36;
+use Test::More tests => 37;
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
 use Test::PDL;
+use Test::NoWarnings;
 
 my ( $got, $expected );
 
@@ -15,17 +16,17 @@ $expected = 3;
 $got = long( 3,4 );
 test_out( "not ok 1 - piddles are equal" );
 test_fail( +2 );
-test_err( '/#\s+expected value is not a PDL\n(.|\n)*/' );
+test_err( '/#\s+expected value is not a piddle\n(.|\n)*/' );
 is_pdl( $got, $expected );
-test_test( 'rejects non-PDL arguments' );
+test_test( 'rejects non-piddle arguments' );
 
 $expected = short( 1,2 );
 $got = -2;
 test_out( "not ok 1 - piddles are equal" );
 test_fail( +2 );
-test_err( '/#\s+received value is not a PDL\n(.|\n)*/' );
+test_err( '/#\s+received value is not a piddle\n(.|\n)*/' );
 is_pdl( $got, $expected );
-test_test( 'rejects non-PDL arguments' );
+test_test( 'rejects non-piddle arguments' );
 
 Test::PDL::set_options( EQUAL_TYPES => 0 );
 $expected = long( 3,4 );

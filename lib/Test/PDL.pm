@@ -1,12 +1,12 @@
 package Test::PDL;
 
-# ABSTRACT: Test piddles for equality
+# ABSTRACT: Test Perl Data Language arrays (a.k.a. piddles) for equality
 
 =head1 SYNOPSIS
 
 	use PDL;
-	use Test::More tests => 2;
-	use Test::PDL;
+	use Test::More tests => 3;
+	use Test::PDL qw( is_pdl :deep );
 
 	# an example of a test that succeeds
 	$got      = sequence 5;
@@ -29,15 +29,31 @@ package Test::PDL;
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
 
+	# piddles within other data structures can be tested with Test::Deep
+	use Test::Deep qw( cmp_deeply );
+	$got      = { name => 'Histogram', data => long( 17,0,1 ) };
+	$expected = { name => 'Histogram', data => test_long( 17,0,0,1 ) };
+	cmp_deeply( $got, $expected, 'demonstrate the output of a failing deep comparison' );
+	#   OUTPUT:
+	# not ok 3 - demonstrate the output of a failing deep comparison
+	#
+	#   Failed test 'demonstrate the output of a failing deep comparison'
+	#   at aux/pod.t line 30.
+	# Comparing $data->{"data"} as a piddle:
+	# dimensions do not match in extent
+	#    got : Long     D [3]        (P    ) [17 0 1]
+	# expect : Long     D [4]        (P    ) [17 0 0 1]
+
 =cut
 
 use strict;
 use warnings;
-use Test::Builder;
 use PDL::Lite;
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
+our @EXPORT_OK = qw( eq_pdl eq_pdl_diag is_pdl test_pdl );
+our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 
 =head1 DESCRIPTION
 
@@ -47,13 +63,18 @@ patterns, and finally the values themselves. The exact behaviour can be
 configured by setting certain options (see set_options() and %OPTIONS below).
 Test::PDL is mostly useful in test scripts.
 
-Test::PDL exports only one function: is_pdl().
+Test::PDL is to be used with the Perl Data Language (L<PDL>).
+
+By default, Test::PDL exports only one function: is_pdl(). The other functions
+are exported on demand only. The export tag C<:deep> exports test_pdl() and one
+function for each PDL type constructor (like short(), double(), etc.), prefixed
+with C<test_>: test_short(), test_double(), ...
 
 =head1 VARIABLES
 
 =head2 %OPTIONS
 
-The comparison criteria used by is_pdl() can be configured by setting the
+The comparison criteria used by Test::PDL can be configured by setting the
 values in the %OPTIONS hash. This can be done directly, by addressing
 %Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
 used instead.
@@ -190,10 +211,10 @@ sub _comparison_fails
 {
 	my ( $got, $expected ) = @_;
 	if( not eval { $got->isa('PDL') } ) {
-		return 'received value is not a PDL';
+		return 'received value is not a piddle';
 	}
 	if( not eval { $expected->isa('PDL') } ) {
-		return 'expected value is not a PDL';
+		return 'expected value is not a piddle';
 	}
 	if( $OPTIONS{ EQUAL_TYPES } && $got->type != $expected->type ) {
 		return 'types do not match (EQUAL_TYPES is true)';
@@ -270,6 +291,7 @@ Named after is() from L<Test::More>.
 
 sub is_pdl
 {
+	require Test::Builder;
 	my ( $got, $expected, $name ) = @_;
 	$name ||= "piddles are equal";
 	my $tb = Test::Builder->new;
@@ -286,11 +308,165 @@ sub is_pdl
 	}
 }
 
+=head2 eq_pdl
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise.
+
+=for usage # PDL
+
+	my $equal = eq_pdl( $got, $expected );
+
+eq_pdl() contains just the comparison part of is_pdl(), without the
+infrastructure required to write tests with Test::More. It could be used as
+part of a larger test in which the equality of two piddles must be verified. By
+itself, eq_pdl() does not generate any output, so it should be safe to use
+outside test suites.
+
+=cut
+
+sub eq_pdl
+{
+	my ( $got, $expected ) = @_;
+	return !_comparison_fails( $got, $expected );
+}
+
+=head2 eq_pdl_diag
+
+=for ref # PDL
+
+Return true if two piddles compare equal, false otherwise, and the reason why
+the comparison failed (if it did).
+
+=for usage # PDL
+
+	my( $ok ) = eq_pdl_diag( $got, $expected );
+	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+
+eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
+comparison failed (if it failed). $diag will be false if the comparison
+succeeds. Does not need L<Test::Builder>, so you can use it as part of
+something else, without side effects (like generating output). It was written
+to support deep comparisons with L<Test::Deep>.
+
+=cut
+
+sub eq_pdl_diag
+{
+	my ( $got, $expected ) = @_;
+	my $reason = _comparison_fails( $got, $expected );
+	if( $reason ) { return 0, $reason }
+	else { return 1 }
+}
+
+=head2 test_pdl
+
+=for ref # PDL
+
+Special comparison to be used in conjunction with L<Test::Deep> to test piddles
+inside data structures.
+
+=for usage # PDL
+
+	my $expected = { ..., some_field => test_pdl( 1,2,-7 ), ... };
+	my $expected = [ ..., test_short( 1,2,-7 ), ... ];
+
+Suppose you want to compare data structures that happen to contain piddles. You
+use is_deeply() (from L<Test::More>) or cmp_deeply() (from L<Test::Deep>) to
+compare the structures element by element. Unfortunately, you cannot just write
+
+	my $got = my_sub( ... );
+	my $expected = {
+		...,
+		some_field => pdl( ... ),
+		...
+	};
+	is_deeply $got, $expected;
+
+Neither does cmp_deeply() work in the same situation. is_deeply() tries to
+compare the piddles using the (overloaded) C<==> comparison operator, which
+doesn't work. It simply dies with an error message saying that multidimensional
+piddles cannot be compared, whereas cmp_deeply() performs only a shallow
+comparison of the references.
+
+What you need is a special comparison, which is provided by this function, to
+be used with cmp_deeply(). You need to rewrite $expected as follows
+
+	my $expected = {
+		...,
+		some_field => test_pdl( ... ),
+		...
+	};
+	cmp_deeply $got, $expected;
+
+Note that you need to write test_pdl() instead of pdl(). You could achieve the
+same thing with
+
+	my $expected = {
+		...,
+		some_field => code( sub { eq_pdl_diag( shift, pdl( ... ) ) } ),
+		...
+	};
+
+but the diagnostics provided by test_pdl() are better, and it's easier to use.
+test_pdl() accepts the same arguments as the PDL constructor pdl() does. If you
+need to compare a piddle with a type different from the default type, use one
+of the provided test_byte(), test_short(), test_long(), etc.:
+
+	my $expected = { data => test_short( -4,-9,13 ) };
+
+If you need to manipulate the expected value, you should keep in mind that the
+return value of test_pdl() and the like are not piddles. Therefore, in-place
+modification of the expected value won't work:
+
+	my $expected = { data => test_short( -99,-9,13 )->inplace->setvaltobad( -99 ) }; # won't work!
+
+You should rather do
+
+	my $expected = { data => test_pdl( short(-99,-9,13)->inplace->setvaltobad(-99) ) };
+
+test_pdl() will correctly set the type of the expected value to I<short> in the
+above example.
+
+=cut
+
+sub test_pdl
+{
+	require Test::Deep::PDL;
+	my $expected = pdl( @_ );
+	return Test::Deep::PDL->new( $expected );
+}
+
+=for Pod::Coverage test_byte test_short test_ushort test_long test_longlong
+test_float test_double
+
+=cut
+
+for my $type ( qw/byte short ushort long longlong float double/ ) {
+	my $ctor = do {
+		local *slot = $PDL::{ $type };
+		*slot{CODE}
+	};
+	my $sub = sub {
+		require Test::Deep::PDL;
+		my $expected = $ctor->( @_ );
+		return Test::Deep::PDL->new( $expected );
+	};
+	my $sub_name = 'test_' . $type;
+	{
+		no strict 'refs';
+		*$sub_name = $sub;
+	}
+	push @EXPORT_OK, $sub_name;
+	push @{ $EXPORT_TAGS{deep} }, $sub_name;
+}
+
 =head2 set_options
 
 =for ref # PDL
 
-Configure the comparison carried out by is_pdl().
+Configure the comparison carried out by Test::PDL's testing functions.
 
 =for example # PDL
 
@@ -323,7 +499,7 @@ None reported so far.
 
 =head1 SEE ALSO
 
-L<PDL>, L<Test::More>
+L<PDL>, L<Test::More>, L<Test::Deep>, L<Test::PDL::Deep>
 
 =head1 ACKNOWLEDGMENTS
 

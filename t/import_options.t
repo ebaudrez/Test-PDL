@@ -1,16 +1,19 @@
 use strict;
 use warnings;
-use Test::More tests => 13;
+use Test::More tests => 14;
 use Test::Deep;
 use Test::Exception;
+use Test::NoWarnings;
 
 # force reloading Test::PDL on next 'require' + wipe functions living in the
 # Test::PDL namespace to avoid redefinition warnings
 sub wipe
 {
 	delete $INC{ 'Test/PDL.pm' };
-	delete $Test::PDL::{ $_ } for qw( import _approx _comparison_fails
-					  _dimensions_match is_pdl set_options );
+	delete $Test::PDL::{ $_ } for qw( _approx _comparison_fails
+		_dimensions_match eq_pdl eq_pdl_diag import is_pdl set_options
+		test_byte test_double test_float test_long test_longlong
+		test_pdl test_short test_ushort );
 }
 
 # we should start out without an 'is_pdl' function
@@ -27,7 +30,7 @@ require Test::PDL;
 ::wipe;
 
 # use Test::PDL;
-package t1;
+package t2;
 require Test::PDL;
 Test::PDL->import();
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -38,7 +41,7 @@ Test::PDL->import();
 ::wipe;
 
 # use Test::PDL -equal_types => 0;
-package t2;
+package t3;
 require Test::PDL;
 Test::PDL->import( -equal_types => 0 );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -49,7 +52,7 @@ Test::PDL->import( -equal_types => 0 );
 ::wipe;
 
 # use Test::PDL -tolerance => 1e-8;
-package t3;
+package t4;
 require Test::PDL;
 Test::PDL->import( -tolerance => 1e-8 );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -60,7 +63,7 @@ Test::PDL->import( -tolerance => 1e-8 );
 ::wipe;
 
 # use Test::PDL -tolerance => 1e-8, -equal_types => 0, 'is_pdl';
-package t4;
+package t5;
 require Test::PDL;
 Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
 ::cmp_deeply \%Test::PDL::OPTIONS, {
@@ -71,7 +74,7 @@ Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
 ::wipe;
 
 # use Test::PDL -whatever => 42;
-package t5;
+package t6;
 require Test::PDL;
 ::throws_ok { Test::PDL->import( -whatever => 42 ) } qr/\binvalid option WHATEVER\b/;
 ::ok ! __PACKAGE__->can( 'is_pdl' );
