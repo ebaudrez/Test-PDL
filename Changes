@@ -2,6 +2,11 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.05      2012-11-20
+
+ - the first non-trial release; nothing has actually changed in the
+   distribution except the version number (Edward Baudrez)
+
 0.04      2012-10-11
 
  - added a function eq_pdl() to compare two piddles, without performing an
