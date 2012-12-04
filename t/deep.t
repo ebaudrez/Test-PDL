@@ -50,8 +50,8 @@ for my $type ( @types ) {
 	test_out 'not ok 1';
 	test_fail +4;
 	test_diag 'Compared ${$data->{"data"}}';
-	test_err  "/#    got : '\\d+'/",
-		  "/# expect : '\\d+'/";
+	test_err  "/#    got : '-?\\d+'/",
+		  "/# expect : '-?\\d+'/";
 	cmp_deeply $got, $expected;
 	test_test 'but shallow reference comparison is not powerful enough';
 }

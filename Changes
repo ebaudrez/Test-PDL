@@ -2,6 +2,9 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - fixed unexpected test failure: references can stringify to negative numbers!
+   (Edward Baudrez)
+
 0.05      2012-11-20
 
  - the first non-trial release; nothing has actually changed in the
