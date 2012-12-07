@@ -4,6 +4,12 @@ Revision history for Test::PDL
 
  - fixed unexpected test failure: references can stringify to negative numbers!
    (Edward Baudrez)
+ - diagnose a possible problem in the arguments:
+	is_pdl hist( pdl(2,3,4,5) ), pdl(1,1,1,1);
+   hist() returns two piddles in list context, leaving the expected value
+   pdl(1,1,1,1) in the third place as the test name. As this is most likely not
+   what the user wanted, an error is raised when this is detected (Edward
+   Baudrez)
 
 0.05      2012-11-20
 

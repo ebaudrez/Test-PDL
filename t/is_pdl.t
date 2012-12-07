@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 37;
+use Test::More tests => 38;
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
@@ -185,6 +185,15 @@ $got = sequence 5;
 test_out( "ok 1 - insert custom test name" );
 is_pdl( $got, $expected, 'insert custom test name' );
 test_test( 'custom test name is displayed correctly' );
+
+# Although the next test may appear strange, the case it tests can be produced
+# by the following test:
+#	is_pdl hist( pdl(2,3,4,5) ), pdl(1,1,1,1);
+# Since hist() returns two piddles in list context, the expected piddle ends up
+# as the third argument. Since this is probably not what the user intended, an
+# error is raised.
+throws_ok { is_pdl( $got, $expected, pdl(1,1,1,1) ) }
+	qr/^error in arguments: test name is a piddle at /, 'test name is a piddle';
 
 $expected = long( 4,5,6,7,8,9 );
 $expected->badflag( 1 );

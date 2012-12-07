@@ -293,8 +293,11 @@ sub is_pdl
 {
 	require Test::Builder;
 	my ( $got, $expected, $name ) = @_;
-	$name ||= "piddles are equal";
 	my $tb = Test::Builder->new;
+	if( eval { $name->isa('PDL') } ) {
+		$tb->croak( 'error in arguments: test name is a piddle' );
+	}
+	$name ||= "piddles are equal";
 	if( my $reason = _comparison_fails $got, $expected ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
