@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 34;
+use Test::More tests => 37;
 use PDL;
 use Test::PDL qw( eq_pdl );
 use Test::NoWarnings;
@@ -79,6 +79,18 @@ ok eq_pdl( $got, $expected ), 'approximate comparison for floating-point data su
 $expected = pdl( 0,1,2,3,4 );
 $got = sequence 5;
 ok eq_pdl( $got, $expected ), 'succeeds when it should succeed';
+
+$expected = null;
+$got = null;
+ok eq_pdl( $got, $expected ), 'null == null';
+
+$expected = null;
+$got = pdl( 1,2,3 );
+ok !eq_pdl( $got, $expected ), 'pdl( ... ) != null';
+
+$expected = pdl( 1,2,3 );
+$got = null;
+ok !eq_pdl( $got, $expected ), 'null != pdl( ... )';
 
 note 'mixed-type comparisons';
 

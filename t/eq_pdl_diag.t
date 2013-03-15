@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 49;
+use Test::More tests => 54;
 use PDL;
 use Test::PDL qw( eq_pdl_diag );
 use Test::NoWarnings;
@@ -112,6 +112,23 @@ $expected = pdl( 0,1,2,3,4 );
 $got = sequence 5;
 ( $ok, $diag ) = eq_pdl_diag( $got, $expected );
 ok $ok;
+
+$expected = null;
+$got = null;
+( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+ok $ok;
+
+$expected = null;
+$got = pdl( 1,2,3 );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+ok !$ok;
+is $diag, 'values do not match';
+
+$expected = pdl( 1,2,3 );
+$got = null;
+( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+ok !$ok;
+is $diag, 'values do not match';
 
 note 'mixed-type comparisons';
 

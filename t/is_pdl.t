@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 38;
+use Test::More tests => 41;
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
@@ -124,6 +124,32 @@ $got = sequence 5;
 test_out( "ok 1 - piddles are equal" );
 is_pdl( $got, $expected );
 test_test( 'succeeds when it should succeed' );
+
+$expected = null;
+$got = null;
+test_out( "ok 1 - piddles are equal" );
+is_pdl( $got, $expected );
+test_test( 'null == null' );
+
+$expected = null;
+$got = pdl( 1,2,3 );
+test_out( "not ok 1 - piddles are equal" );
+test_fail( +4 );
+test_err( '/#\s+values do not match/' );
+test_err( '/#\s+got:.*/' );
+test_err( '/#\s+expected:\s+Null/' );
+is_pdl( $got, $expected );
+test_test( 'pdl( ... ) != null' );
+
+$expected = pdl( 1,2,3 );
+$got = null;
+test_out( "not ok 1 - piddles are equal" );
+test_fail( +4 );
+test_err( '/#\s+values do not match/' );
+test_err( '/#\s+got:\s+Null/' );
+test_err( '/#\s+expected:.*/' );
+is_pdl( $got, $expected );
+test_test( 'null != pdl( ... )' );
 
 note 'mixed-type comparisons';
 

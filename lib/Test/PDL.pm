@@ -302,8 +302,8 @@ sub is_pdl
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
 		$tb->diag( "    $reason\n",
-			   "         got: ", eval { $got->isa('PDL') }      ? $got->info( $fmt )      : '', $got, "\n",
-			   "    expected: ", eval { $expected->isa('PDL') } ? $expected->info( $fmt ) : '', $expected );
+			   "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
+			   "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected );
 		return $rc;
 	}
 	else {
