@@ -2,6 +2,9 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - fixed the tests to work with the latest development release of PDL
+   (2.006_03) (Edward Baudrez)
+
 0.08      2013-03-15
 
  - added tests involving null piddles (Edward Baudrez)
