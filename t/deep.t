@@ -1,13 +1,15 @@
 use strict;
 use warnings;
-use Test::More tests => 87;
+use Test::More;
 use Test::Deep qw( cmp_deeply code );
 use Test::PDL qw( :deep eq_pdl eq_pdl_diag );
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
+use PDL::Types;
 
-my @types = qw( byte short ushort long longlong float double );
+my @types = PDL::Types::types;
+plan tests => 17 + 10 * @types;
 
 isa_ok test_pdl( 1,2,3 ), 'Test::Deep::PDL';
 for my $type ( @types ) {

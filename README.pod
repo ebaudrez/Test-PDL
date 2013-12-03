@@ -6,7 +6,7 @@ Test::PDL - Test Perl Data Language arrays (a.k.a. piddles) for equality
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 
@@ -301,8 +301,8 @@ You should rather do
 test_pdl() will correctly set the type of the expected value to I<short> in the
 above example.
 
-=for Pod::Coverage test_byte test_short test_ushort test_long test_longlong
-test_float test_double
+=for Pod::Coverage test_byte test_short test_ushort test_long test_indx
+test_longlong test_float test_double
 
 =head2 set_options
 

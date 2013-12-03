@@ -49,6 +49,7 @@ package Test::PDL;
 use strict;
 use warnings;
 use PDL::Lite;
+use PDL::Types ();
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
@@ -441,22 +442,21 @@ sub test_pdl
 	return Test::Deep::PDL->new( $expected );
 }
 
-=for Pod::Coverage test_byte test_short test_ushort test_long test_longlong
-test_float test_double
+=for Pod::Coverage test_byte test_short test_ushort test_long test_indx
+test_longlong test_float test_double
 
 =cut
 
-for my $type ( qw/byte short ushort long longlong float double/ ) {
-	my $ctor = do {
-		local *slot = $PDL::{ $type };
-		*slot{CODE}
-	};
+for my $type ( PDL::Types::types ) {
 	my $sub = sub {
 		require Test::Deep::PDL;
-		my $expected = $ctor->( @_ );
+		my $expected = PDL::convert(
+			PDL::Core::alltopdl( 'PDL', scalar(@_) > 1 ? [@_] : shift ),
+			$type->numval
+		);
 		return Test::Deep::PDL->new( $expected );
 	};
-	my $sub_name = 'test_' . $type;
+	my $sub_name = 'test_' . $type->convertfunc;
 	{
 		no strict 'refs';
 		*$sub_name = $sub;
