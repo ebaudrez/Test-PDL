@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.10      2013-12-03
+
  - now querying PDL for the available types, instead of enumerating types
    explicitly. This should result in test_indx() being available on PDL
    2.006_91 or later, allowing tests for PDL with the new PDL_Indx data type
