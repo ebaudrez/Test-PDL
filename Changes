@@ -2,6 +2,11 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.11      2014-11-19
+
+ - tweaked the tests so they also pass with the latest development versions of
+   Test::Builder (Edward Baudrez)
+
 0.10      2013-12-03
 
  - now querying PDL for the available types, instead of enumerating types
