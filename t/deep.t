@@ -120,9 +120,9 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_test 'fails with correct message and diagnostics when received value is not a piddle';
 	test_out 'not ok 1';
 	test_fail +6;
-	test_diag 'Ran coderef at $data->{"data"} on',
-		  '',
-		  "'2'",
+	test_diag 'Ran coderef at $data->{"data"} on';
+	test_err  '/#?\s*/';
+	test_diag "'2'",
 		  'and it said',
 		  'received value is not a piddle';
 	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
@@ -145,9 +145,9 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_test 'fails with correct message and diagnostics on value mismatch';
 	test_out 'not ok 1';
 	test_fail +6;
-	test_diag 'Ran coderef at $data->{"data"} on',
-		  '';
-	test_err  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
+	test_diag 'Ran coderef at $data->{"data"} on';
+	test_err  '/#?\s*/',
+		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
 		  'values do not match';
 	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
@@ -170,9 +170,9 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_test 'fails with correct message and diagnostics on type mismatch';
 	test_out 'not ok 1';
 	test_fail +6;
-	test_diag 'Ran coderef at $data->{"data"} on',
-		  '';
-	test_err  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
+	test_diag 'Ran coderef at $data->{"data"} on';
+	test_err  '/#?\s*/',
+		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
 		  'types do not match (EQUAL_TYPES is true)';
 	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
