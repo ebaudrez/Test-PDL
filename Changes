@@ -2,6 +2,9 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - the tests started failing with recent versions of PDL; should be fixed now
+   (Edward Baudrez)
+
 0.11      2014-11-19
 
  - tweaked the tests so they also pass with the latest development versions of
