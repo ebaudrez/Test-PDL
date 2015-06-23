@@ -9,7 +9,7 @@ use PDL;
 use PDL::Types;
 
 my @types = PDL::Types::types;
-plan tests => 17 + 10 * @types;
+plan tests => 15 + 10 * @types;
 
 isa_ok test_pdl( 1,2,3 ), 'Test::Deep::PDL';
 for my $type ( @types ) {
@@ -25,7 +25,6 @@ for my $type ( @types ) {
 	my $expected = { name => 'Histogram', data => $pdl2 };
 	throws_ok { ok $pdl1 == $pdl2 } qr/multielement piddle in conditional expression at /, '== dies with an error message';
 	throws_ok { is $pdl1, $pdl2 } qr/multielement piddle in conditional expression at /, 'is() dies with an error message';
-	throws_ok { is_deeply $got, $expected } qr/^multielement piddle in conditional expression at /, 'is_deeply() dies with the same error message';
 }
 
 {
@@ -33,7 +32,6 @@ for my $type ( @types ) {
 	my $got      = { name => 'Histogram', data => $pdl };
 	my $expected = { name => 'Histogram', data => $pdl };
 	throws_ok { ok $pdl == $pdl } qr/^multielement piddle in conditional expression at /, 'even shallow reference comparisons do not work with ==';
-	throws_ok { is_deeply $got, $expected } qr/^multielement piddle in conditional expression at /, '... neither with is_deeply()';
 }
 
 {
