@@ -303,8 +303,8 @@ You should rather do
 test_pdl() will correctly set the type of the expected value to I<short> in the
 above example.
 
-=for Pod::Coverage test_byte test_short test_ushort test_long test_indx
-test_longlong test_float test_double
+=for Pod::Coverage test_anyval test_byte test_short test_ushort test_long
+test_indx test_longlong test_float test_double
 
 =head2 set_options
 
