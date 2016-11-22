@@ -23,15 +23,15 @@ for my $type ( @types ) {
 	my $got      = { name => 'Histogram', data => $pdl1 };
 	my $pdl2     = pdl( 1,2,3.13 );
 	my $expected = { name => 'Histogram', data => $pdl2 };
-	throws_ok { ok $pdl1 == $pdl2 } qr/multielement piddle in conditional expression at /, '== dies with an error message';
-	throws_ok { is $pdl1, $pdl2 } qr/multielement piddle in conditional expression at /, 'is() dies with an error message';
+	throws_ok { ok $pdl1 == $pdl2 } qr/multielement piddle in conditional expression /, '== dies with an error message';
+	throws_ok { is $pdl1, $pdl2 } qr/multielement piddle in conditional expression /, 'is() dies with an error message';
 }
 
 {
 	my $pdl      = pdl( 1,2,3.13 );
 	my $got      = { name => 'Histogram', data => $pdl };
 	my $expected = { name => 'Histogram', data => $pdl };
-	throws_ok { ok $pdl == $pdl } qr/^multielement piddle in conditional expression at /, 'even shallow reference comparisons do not work with ==';
+	throws_ok { ok $pdl == $pdl } qr/^multielement piddle in conditional expression /, 'even shallow reference comparisons do not work with ==';
 }
 
 {

@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - fix for RT ticket #118529: t/deep.t fails (Edward Baudrez)
+
 0.12      2015-06-23
 
  - the tests started failing with recent versions of PDL; should be fixed now
