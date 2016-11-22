@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.13      2016-11-22
+
  - fix for RT ticket #118529: t/deep.t fails (Edward Baudrez)
 
 0.12      2015-06-23
