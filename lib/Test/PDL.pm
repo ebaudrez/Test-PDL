@@ -438,7 +438,7 @@ above example.
 sub test_pdl
 {
 	require Test::Deep::PDL;
-	my $expected = pdl( @_ );
+	my $expected = PDL::Core::pdl( @_ );
 	return Test::Deep::PDL->new( $expected );
 }
 
@@ -490,8 +490,8 @@ This function is not exported. Rather, it must be called as
 sub set_options
 {
 	while( my( $key, $value ) = splice @_, 0, 2 ) {
-		barf( "invalid option $key" ) unless grep { $key eq $_ } keys %OPTIONS;
-		barf( "undefined value for $key" ) unless defined $value;
+		PDL::barf( "invalid option $key" ) unless grep { $key eq $_ } keys %OPTIONS;
+		PDL::barf( "undefined value for $key" ) unless defined $value;
 		$OPTIONS{ $key } = $value;
 	}
 }
