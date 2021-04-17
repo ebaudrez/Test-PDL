@@ -24,7 +24,8 @@ sub wipe
 	delete $Test::PDL::{ $_ } for qw( _approx _comparison_fails
 		_dimensions_match eq_pdl eq_pdl_diag import is_pdl set_options
 		test_anyval test_byte test_double test_float test_indx test_long
-		test_longlong test_pdl test_short test_ushort );
+		test_longlong test_pdl test_short test_ushort
+		test_cfloat test_cdouble );
 }
 
 # we should start out without an 'is_pdl' function
