@@ -443,7 +443,7 @@ sub test_pdl
 }
 
 =for Pod::Coverage test_anyval test_byte test_short test_ushort test_long
-test_indx test_longlong test_float test_double
+test_indx test_longlong test_float test_double test_cfloat test_cdouble
 
 =cut
 
