@@ -371,6 +371,11 @@ sub eq_pdl_diag
 Special comparison to be used in conjunction with L<Test::Deep> to test piddles
 inside data structures.
 
+B<NB> Due to probably the (as of PDL 2.037, and 0.15 of this module)
+not-yet-complete implementation of native complex numbers, these
+comparisons so far only work reliably on real data types, not
+native-complex ones.
+
 =for usage # PDL
 
 	my $expected = { ..., some_field => test_pdl( 1,2,-7 ), ... };
