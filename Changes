@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - update to work with PDL 2.037 - not yet perfect with native complex types
+
 0.14      2019-04-26
 
  - fix for RT ticket #122194: Tests fail with PDL 2.018 (Ed J)
