@@ -90,15 +90,15 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		$expected1->{data}->{expected}->inplace->setvaltobad( 99 );
 		test_out 'ok 1';
 		cmp_deeply $got, $expected1;
-		test_test 'succeeds when it should succeed, with piddle supplied as values';
+		test_test "$type succeeds when it should succeed, with piddle supplied as values";
 		my $expected2 = { data => test_pdl( $pdl ) };
 		test_out 'ok 1';
 		cmp_deeply $got, $expected2;
-		test_test '... also when piddle is supplied directly';
+		test_test "... ($type) also when piddle is supplied directly";
 		my $expected3 = { data => code( sub { eq_pdl_diag shift, $pdl } ) };
 		test_out 'ok 1';
 		cmp_deeply $got, $expected3;
-		test_test '... and it\'s the same thing as using code()';
+		test_test "... ($type) and it's the same thing as using code()";
 	}
 }
 
