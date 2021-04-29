@@ -4,6 +4,7 @@ Revision history for Test::PDL
 
  - removed the restriction on only real data types now that native
    complex works with PDL 2.039
+ - updated regex and docs to work with new name for ndarray
 
 0.15      2021-04-19
 

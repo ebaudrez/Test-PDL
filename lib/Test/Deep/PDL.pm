@@ -3,7 +3,7 @@ use warnings;
 
 package Test::Deep::PDL;
 
-# ABSTRACT: Test piddles inside data structures with Test::Deep
+# ABSTRACT: Test ndarrays inside data structures with Test::Deep
 
 =for Pod::Coverage init descend diag_message renderExp renderGot
 
@@ -23,7 +23,7 @@ sub init
 {
 	my $self = shift;
 	my $expected = shift;
-	die "Supplied value is not a piddle" unless eval { $expected->isa('PDL') };
+	die "Supplied value is not a ndarray" unless eval { $expected->isa('PDL') };
 	$self->{expected} = $expected;
 }
 
@@ -40,7 +40,7 @@ sub diag_message
 {
 	my $self = shift;
 	my $where = shift;
-	return "Comparing $where as a piddle:\n" . $self->data->{diag};
+	return "Comparing $where as a ndarray:\n" . $self->data->{diag};
 }
 
 sub renderExp
