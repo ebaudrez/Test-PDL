@@ -47,8 +47,9 @@ jobs:
     needs: dist
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-11, windows-latest, ubuntu-latest]
         perl: ['5']
         include:
           - { os: 'ubuntu-latest', perl: "5.14" }
@@ -75,12 +76,21 @@ jobs:
         with:
           distribution: 'strawberry'
 
-      - run: perl -V
+      - name: target-setup-perl (perl -V)
+        shell: bash
+        run: |
+          echo "::group::setup-perl (perl -V)"
+          export MYPERL=$(which -a perl | grep -m 1 hostedtoolcache)
+          echo "MYPERL=$MYPERL" >> $GITHUB_ENV
+          $MYPERL -V
+          echo "::endgroup::"
 
       - name: Install Perl deps
+        shell: bash
         run: |
-          cpanm --notest --installdeps .
+          $MYPERL -S cpanm --notest --installdeps . || ( cat ~/.cpanm/build.log && false )
 
       - name: Run tests
+        shell: bash
         run: |
-          cpanm --verbose --test-only .
+          $MYPERL -S cpanm --verbose --test-only .
