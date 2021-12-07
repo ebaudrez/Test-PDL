@@ -1,96 +1,87 @@
-name: Run Tests
-
+name: perl
 on:
   push:
     branches:
       - '*'
+    tags-ignore:
+      - '*'
   pull_request:
+  create:
+
+env:
+  IRC_REPO_OWNER: 'ebaudrez'
 
 jobs:
+  notify:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: ${{ always() }}
+    steps:
+      - uses: PDLPorters/devops/github-actions/irc-notifications@master
+        with:
+          target-notifications: true
+          repository_owner: ${{ env.IRC_REPO_OWNER }}
   dist:
     name: Make distribution using Dist::Zilla
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Cache ~/perl5
-        uses: actions/cache@v2
-        with:
-          key: ${{ runner.os }}-dist-locallib
-          path: ~/perl5
-      - name: Perl version
-        run: |
-          perl -v
-      - name: Install cpanm
-        run: |
-          curl -L https://cpanmin.us | perl - --sudo App::cpanminus
-      - name: Install local::lib
-        run: |
-          cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
-      - name: Install Dist::Zilla
-        shell: bash
-        run: |
-          eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
-          cpanm -n Dist::Zilla
-          dzil authordeps --missing | cpanm -n
-      - name: Make distribution
-        shell: bash
-        run: |
-          eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
-          dzil build --in build-dir
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: dist
-          path: ./build-dir
-  test:
-    needs: dist
+      - name: 'build-dzil-dist'
+        uses: PDLPorters/devops/github-actions/build-dzil-dist@master
+  ci:
     runs-on: ${{ matrix.os }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+    needs: [ notify, dist ]
     strategy:
       fail-fast: false
       matrix:
         os: [macos-11, windows-latest, ubuntu-latest]
-        perl: ['5']
+        perl-version: ['5']
         include:
-          - { os: 'ubuntu-latest', perl: "5.14" }
-          - { os: 'ubuntu-latest', perl: "5.16" }
-          - { os: 'ubuntu-latest', perl: "5.20" }
-          - { os: 'ubuntu-latest', perl: "5.30" }
-          - { os: 'ubuntu-latest', perl: "5.32" }
-    name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
-
+          - { os: 'ubuntu-latest', perl-version: "5.14" }
+          - { os: 'ubuntu-latest', perl-version: "5.16" }
+          - { os: 'ubuntu-latest', perl-version: "5.20" }
+          - { os: 'ubuntu-latest', perl-version: "5.30" }
+          - { os: 'ubuntu-latest', perl-version: "5.32" }
+          - perl-version: '5.32'
+            os: ubuntu-latest
+            release-test: true
+            coverage: true
     steps:
+      - uses: actions/checkout@v2
       - name: Get dist artifact
         uses: actions/download-artifact@v2
         with:
           name: dist
-
-      - name: Set up perl
-        uses: shogo82148/actions-setup-perl@v1
-        if: matrix.os != 'windows-latest'
+          path: build-dir
+      - name: 'ci-dist: target-setup-perl'
+        uses: PDLPorters/devops/github-actions/ci-dist@master
         with:
-          perl-version: ${{ matrix.perl }}
-      - name: Set up perl (Strawberry)
-        uses: shogo82148/actions-setup-perl@v1
-        if: matrix.os == 'windows-latest'
+          path: build-dir
+          target-setup-perl: true
+          perl-version: ${{ matrix.perl-version }}
+      - name: 'ci-dist: target-all after install-dist-perl-deps'
+        uses: PDLPorters/devops/github-actions/ci-dist@master
         with:
-          distribution: 'strawberry'
+          path: build-dir
+          target-setup-perl: false
+          target-install-dist-perl-deps: true
+          target-test-release-testing: true
+          target-test: true
+          test-enable-release-testing: ${{ matrix.release-test }}
+          test-enable-coverage: ${{ matrix.coverage }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: target-setup-perl (perl -V)
-        shell: bash
-        run: |
-          echo "::group::setup-perl (perl -V)"
-          export MYPERL=$(which -a perl | grep -m 1 hostedtoolcache)
-          echo "MYPERL=$MYPERL" >> $GITHUB_ENV
-          $MYPERL -V
-          echo "::endgroup::"
-
-      - name: Install Perl deps
-        shell: bash
-        run: |
-          $MYPERL -S cpanm --notest --installdeps . || ( cat ~/.cpanm/build.log && false )
-
-      - name: Run tests
-        shell: bash
-        run: |
-          $MYPERL -S cpanm --verbose --test-only .
+  build-status:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: ${{ always() }}
+    needs: [ 'ci' ]
+    steps:
+      - uses: PDLPorters/devops/github-actions/irc-notifications@master
+        with:
+          target-build-status: true
+          needs: ${{ toJSON(needs) }}
+          repository_owner: ${{ env.IRC_REPO_OWNER }}
