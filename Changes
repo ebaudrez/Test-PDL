@@ -2,6 +2,10 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.17      2021-12-07
+
+ - test updates
+
 0.16      2021-04-29
 
  - removed the restriction on only real data types now that native
