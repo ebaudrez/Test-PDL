@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use PDL::Doc;
 use Getopt::Std;
 use Config;
@@ -9,8 +10,8 @@ $opt_v = 0;
 
 getopts('v');
 $dir      = '.';		#shift @ARGV;
-$outdb    = 'aux/pdldoc.db';	#shift @ARGV;
-$outindex = 'aux/Index.pod';	#shift @ARGV;
+$outdb    = 'maint/pdldoc.db';	#shift @ARGV;
+$outindex = 'maint/Index.pod';	#shift @ARGV;
 
 #unless (defined $dir) {
 #	($dir = $INC{'PDL.pm'}) =~ s/PDL\.pm$//i;
