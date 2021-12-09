@@ -1,6 +1,6 @@
 .build
 Test-PDL-*.*.tar.gz
 Test-PDL-*.*/
-aux/Index.pod
-aux/pdldoc.db
-aux/pod.t
+maint/Index.pod
+maint/pdldoc.db
+maint/pod.t
