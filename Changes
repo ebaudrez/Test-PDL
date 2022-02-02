@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - actually check if either value is empty
+
 0.18      2022-02-02
 
  - more detailed checks if either value is null
