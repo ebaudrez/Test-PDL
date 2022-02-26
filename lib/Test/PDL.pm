@@ -235,7 +235,10 @@ sub _comparison_fails
 		if ( $got->isempty and !$expected->isempty)
 		or (!$got->isempty and  $expected->isempty);
 	return 0 if $got->isempty and $expected->isempty;
-	# if we get here, bad value patterns are sure to match
+	# if we get here, bad value patterns are sure to match, remove
+	my $isgood = $got->isgood;
+	$got = $got->where($isgood), $expected = $expected->where($isgood);
+	return 0 if $got->isempty;
 	if( $got->type < PDL::float && $expected->type < PDL::float ) {
 		if( not eval { PDL::all( $got == $expected ) } ) {
 			return 'values do not match';
