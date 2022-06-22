@@ -61,7 +61,7 @@ our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 With Test::PDL, you can compare two ndarrays for equality. The comparison is
 performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
-configured by setting certain options (see set_options() and %OPTIONS below).
+configured by setting certain defaults (see set_defaults() and %DEFAULTS below).
 Test::PDL is mostly useful in test scripts.
 
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
@@ -73,11 +73,11 @@ with C<test_>: test_short(), test_double(), ...
 
 =head1 VARIABLES
 
-=head2 %OPTIONS
+=head2 %DEFAULTS
 
 The comparison criteria used by Test::PDL can be configured by setting the
-values in the %OPTIONS hash. This can be done directly, by addressing
-%Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
+values in the %DEFAULTS hash. This can be done directly, by addressing
+%Test::PDL::DEFAULTS directly. However, it is preferred that set_defaults() is
 used instead.
 
 =over 4
@@ -105,7 +105,7 @@ without having to worry about the type of the ndarray being exactly I<double>
 
 =cut
 
-our %OPTIONS = (
+our %DEFAULTS = (
 	TOLERANCE   => 1e-6,
 	EQUAL_TYPES => 1,
 );
@@ -114,7 +114,7 @@ our %OPTIONS = (
 
 =head2 import
 
-Custom importer that recognizes configuration options specified at use time, as
+Custom importer that recognizes configuration defaults specified at use time, as
 in
 
 	use Test::PDL -equal_types => 0;
@@ -122,7 +122,7 @@ in
 This invocation is equivalent to
 
 	use Test::PDL;
-	Test::PDL::set_options( EQUAL_TYPES => 0 );
+	Test::PDL::set_defaults( EQUAL_TYPES => 0 );
 
 but is arguably somewhat nicer.
 
@@ -135,7 +135,7 @@ sub import
 		if( $_[ $i ] =~ /^-/ ) {
 			my( $key, $val ) = splice @_, $i, 2;
 			$key =~ s/^-(.*)/\U$1/;
-			set_options( $key, $val );
+			set_defaults( $key, $val );
 		}
 		else { $i++ }
 	}
@@ -146,7 +146,7 @@ sub import
 
 Internal function reimplementing the functionality of PDL::approx(), but with a
 tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user (see set_options() and $OPTIONS{TOLERANCE}), and defaults to
+be set by the user (see set_defaults() and $DEFAULTS{TOLERANCE}), and defaults to
 1e-6.
 
 =cut
@@ -154,7 +154,7 @@ be set by the user (see set_options() and $OPTIONS{TOLERANCE}), and defaults to
 sub _approx
 {
 	my( $a, $b ) = @_;
-	return abs( $a - $b ) < $OPTIONS{ TOLERANCE };
+	return abs( $a - $b ) < $DEFAULTS{ TOLERANCE };
 }
 
 =head2 _comparison_fails
@@ -217,7 +217,7 @@ sub _comparison_fails
 	if( not eval { $expected->isa('PDL') } ) {
 		return 'expected value is not a ndarray';
 	}
-	if( $OPTIONS{ EQUAL_TYPES } && $got->type != $expected->type ) {
+	if( $DEFAULTS{ EQUAL_TYPES } && $got->type != $expected->type ) {
 		return 'types do not match (EQUAL_TYPES is true)';
 	}
 	if( $got->ndims != $expected->ndims ) {
@@ -473,7 +473,7 @@ for my $type ( PDL::Types::types ) {
 	push @{ $EXPORT_TAGS{deep} }, $sub_name;
 }
 
-=head2 set_options
+=head2 set_defaults
 
 =for ref # PDL
 
@@ -482,25 +482,25 @@ Configure the comparison carried out by Test::PDL's testing functions.
 =for example # PDL
 
 	# e.g., if a tolerance of 1e-6 is too tight
-	Test::PDL::set_options( TOLERANCE => 1e-4 );
+	Test::PDL::set_defaults( TOLERANCE => 1e-4 );
 
-The preferred way to set the options to this module. See %OPTIONS for all
-allowed options. set_options() dies with an error if an unknown option is
-passed. Note that sensible default values are provided for all options, so you
+The preferred way to set the defaults to this module. See %DEFAULTS for all
+allowed defaults. set_defaults() dies with an error if an unknown name is
+passed. Note that sensible default values are provided for all defaults, so you
 needn't use this routine if you are fine with the defaults.
 
 This function is not exported. Rather, it must be called as
 
-	Test::PDL::set_options( KEY => VALUE, ... );
+	Test::PDL::set_defaults( KEY => VALUE, ... );
 
 =cut
 
-sub set_options
+sub set_defaults
 {
 	while( my( $key, $value ) = splice @_, 0, 2 ) {
-		PDL::barf( "invalid option $key" ) unless grep { $key eq $_ } keys %OPTIONS;
+		PDL::barf( "invalid name $key" ) unless grep { $key eq $_ } keys %DEFAULTS;
 		PDL::barf( "undefined value for $key" ) unless defined $value;
-		$OPTIONS{ $key } = $value;
+		$DEFAULTS{ $key } = $value;
 	}
 }
 

@@ -8,7 +8,7 @@ Test::PDL - Test Perl Data Language arrays (a.k.a. ndarrays) for equality
 
 =head1 VERSION
 
-version 0.20
+version 0.21
 
 =head1 SYNOPSIS
 
@@ -57,7 +57,7 @@ version 0.20
 With Test::PDL, you can compare two ndarrays for equality. The comparison is
 performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
-configured by setting certain options (see set_options() and %OPTIONS below).
+configured by setting certain defaults (see set_defaults() and %DEFAULTS below).
 Test::PDL is mostly useful in test scripts.
 
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
@@ -69,11 +69,11 @@ with C<test_>: test_short(), test_double(), ...
 
 =head1 VARIABLES
 
-=head2 %OPTIONS
+=head2 %DEFAULTS
 
 The comparison criteria used by Test::PDL can be configured by setting the
-values in the %OPTIONS hash. This can be done directly, by addressing
-%Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
+values in the %DEFAULTS hash. This can be done directly, by addressing
+%Test::PDL::DEFAULTS directly. However, it is preferred that set_defaults() is
 used instead.
 
 =over 4
@@ -103,7 +103,7 @@ without having to worry about the type of the ndarray being exactly I<double>
 
 =head2 import
 
-Custom importer that recognizes configuration options specified at use time, as
+Custom importer that recognizes configuration defaults specified at use time, as
 in
 
 	use Test::PDL -equal_types => 0;
@@ -111,7 +111,7 @@ in
 This invocation is equivalent to
 
 	use Test::PDL;
-	Test::PDL::set_options( EQUAL_TYPES => 0 );
+	Test::PDL::set_defaults( EQUAL_TYPES => 0 );
 
 but is arguably somewhat nicer.
 
@@ -119,7 +119,7 @@ but is arguably somewhat nicer.
 
 Internal function reimplementing the functionality of PDL::approx(), but with a
 tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user (see set_options() and $OPTIONS{TOLERANCE}), and defaults to
+be set by the user (see set_defaults() and $DEFAULTS{TOLERANCE}), and defaults to
 1e-6.
 
 =head2 _comparison_fails
@@ -307,7 +307,7 @@ above example.
 test_indx test_longlong test_float test_double test_cfloat test_cdouble
 test_cldouble test_ldouble test_sbyte test_ulong test_ulonglong
 
-=head2 set_options
+=head2 set_defaults
 
 =for ref # PDL
 
@@ -316,16 +316,16 @@ Configure the comparison carried out by Test::PDL's testing functions.
 =for example # PDL
 
 	# e.g., if a tolerance of 1e-6 is too tight
-	Test::PDL::set_options( TOLERANCE => 1e-4 );
+	Test::PDL::set_defaults( TOLERANCE => 1e-4 );
 
-The preferred way to set the options to this module. See %OPTIONS for all
-allowed options. set_options() dies with an error if an unknown option is
-passed. Note that sensible default values are provided for all options, so you
+The preferred way to set the defaults to this module. See %DEFAULTS for all
+allowed defaults. set_defaults() dies with an error if an unknown name is
+passed. Note that sensible default values are provided for all defaults, so you
 needn't use this routine if you are fine with the defaults.
 
 This function is not exported. Rather, it must be called as
 
-	Test::PDL::set_options( KEY => VALUE, ... );
+	Test::PDL::set_defaults( KEY => VALUE, ... );
 
 =head1 BUGS
 

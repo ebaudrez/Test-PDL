@@ -23,7 +23,7 @@ ok ! __PACKAGE__->can( 'is_pdl' );
 
 # use Test::PDL '';
 package t1;
-::cmp_deeply \%Test::PDL::OPTIONS, {
+::cmp_deeply \%Test::PDL::DEFAULTS, {
 	TOLERANCE   => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	EQUAL_TYPES => 1,
 };
@@ -32,7 +32,7 @@ package t1;
 # use Test::PDL;
 package t2;
 Test::PDL->import();
-::cmp_deeply \%Test::PDL::OPTIONS, {
+::cmp_deeply \%Test::PDL::DEFAULTS, {
 	TOLERANCE   => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	EQUAL_TYPES => 1,
 };
@@ -41,17 +41,17 @@ Test::PDL->import();
 # use Test::PDL -equal_types => 0;
 package t3;
 Test::PDL->import( -equal_types => 0 );
-::cmp_deeply \%Test::PDL::OPTIONS, {
+::cmp_deeply \%Test::PDL::DEFAULTS, {
 	TOLERANCE   => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	EQUAL_TYPES => 0,
 };
-$Test::PDL::OPTIONS{EQUAL_TYPES} = 1; # explicitly reset so no need reload
+$Test::PDL::DEFAULTS{EQUAL_TYPES} = 1; # explicitly reset so no need reload
 ::ok __PACKAGE__->can( 'is_pdl' );
 
 # use Test::PDL -tolerance => 1e-8;
 package t4;
 Test::PDL->import( -tolerance => 1e-8 );
-::cmp_deeply \%Test::PDL::OPTIONS, {
+::cmp_deeply \%Test::PDL::DEFAULTS, {
 	TOLERANCE   => ::code( sub { abs( $_[0]/1e-8 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	EQUAL_TYPES => 1,
 };
@@ -60,7 +60,7 @@ Test::PDL->import( -tolerance => 1e-8 );
 # use Test::PDL -tolerance => 1e-8, -equal_types => 0, 'is_pdl';
 package t5;
 Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
-::cmp_deeply \%Test::PDL::OPTIONS, {
+::cmp_deeply \%Test::PDL::DEFAULTS, {
 	TOLERANCE   => ::code( sub { abs( $_[0]/1e-8 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	EQUAL_TYPES => 0,
 };
@@ -68,7 +68,7 @@ Test::PDL->import( -tolerance => 1e-8, -equal_types => 0, 'is_pdl' );
 
 # use Test::PDL -whatever => 42;
 package t6;
-::throws_ok { Test::PDL->import( -whatever => 42 ) } qr/\binvalid option WHATEVER\b/;
+::throws_ok { Test::PDL->import( -whatever => 42 ) } qr/\binvalid name WHATEVER\b/;
 ::ok ! __PACKAGE__->can( 'is_pdl' );
 
 ::had_no_warnings;
