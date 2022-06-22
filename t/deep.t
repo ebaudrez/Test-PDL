@@ -160,7 +160,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_out 'not ok 1';
 	test_fail +5;
 	test_diag 'Comparing $data->{"data"} as a ndarray:',
-		  'types do not match (EQUAL_TYPES is true)';
+		  'types do not match (\'require_equal_types\' is true)';
 	test_err  '/#    got : Short\s+D\s+\[3\].*/',
 		  '/# expect : Long\s+D\s+\[3\].*/';
 	cmp_deeply $got, $expected;
@@ -171,7 +171,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_err  '/#?\s*/',
 		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
-		  'types do not match (EQUAL_TYPES is true)';
+		  'types do not match (\'require_equal_types\' is true)';
 	cmp_deeply $got, { data => code( sub { eq_pdl shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }

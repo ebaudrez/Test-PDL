@@ -43,20 +43,17 @@ $got = -2;
 ok !$ok, 'rejects non-piddle arguments';
 is $diag, 'received value is not a ndarray';
 
-Test::PDL::set_options( EQUAL_TYPES => 0 );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
-ok $ok, 'all else being equal, compares equal on differing types when EQUAL_TYPES is false';
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { require_equal_types => 0 } );
+ok $ok, 'all else being equal, compares equal on differing types when \'require_equal_types\' is false';
 is $diag, '';
 
-Test::PDL::set_options( EQUAL_TYPES => 1 );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
-ok !$ok, 'catches type mismatch, but only when EQUAL_TYPES is true';
-is $diag, 'types do not match (EQUAL_TYPES is true)';
-Test::PDL::set_options( EQUAL_TYPES => 0 );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { require_equal_types => 1 } );
+ok !$ok, 'catches type mismatch, but only when \'require_equal_types\' is true';
+is $diag, 'types do not match (\'require_equal_types\' is true)';
 
 $expected = long( 3 );
 $got = long( 3,4 );
@@ -106,10 +103,9 @@ $got = pdl( 4,5,6,7,8.0000001,9 );
 ok $ok, 'approximate comparison for floating-point data succeeds correctly at documented default tolerance of 1e-6';
 is $diag, '';
 
-Test::PDL::set_options( TOLERANCE => 1e-2 );
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2 } );
 ok $ok, 'approximate comparison for floating-point data succeeds correctly at user-specified tolerance of 1e-2';
 is $diag, '';
 
@@ -148,40 +144,33 @@ note 'mixed-type comparisons';
 $expected = double( 0,1,2.001,3,4 );
 $got = long( 0,1,2,3,4 );
 
-Test::PDL::set_options( TOLERANCE => 1e-2 );
-Test::PDL::set_options( EQUAL_TYPES => 0 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 ok $ok, 'succeeds correctly for long/double';
 is $diag, '';
 
-Test::PDL::set_options( TOLERANCE => 1e-6 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for long/double';
 is $diag, 'values do not match';
 
 $expected = short( 0,1,2,3,4 );
 $got = float( 0,1,2.001,3,4 );
 
-Test::PDL::set_options( TOLERANCE => 1e-2 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 ok $ok, 'succeeds correctly for float/short';
 is $diag, '';
 
-Test::PDL::set_options( TOLERANCE => 1e-6 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for float/short';
 is $diag, 'values do not match';
 
 $expected = float( 0,-1,2.001,3,49999.998 );
 $got = double( 0,-0.9999,1.999,3,49999.999 );
 
-Test::PDL::set_options( TOLERANCE => 1e-2 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 ok $ok, 'succeeds correctly for double/float';
 is $diag, '';
 
-Test::PDL::set_options( TOLERANCE => 1e-6 );
-( $ok, $diag ) = run_eq_pdl( $got, $expected );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for double/float';
 is $diag, 'values do not match';
 
