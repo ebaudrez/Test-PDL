@@ -61,7 +61,8 @@ our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 With Test::PDL, you can compare two ndarrays for equality. The comparison is
 performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
-configured by setting certain options (see set_options() and %OPTIONS below).
+configured by setting certain package-wide defaults (see %DEFAULTS below), or
+by supplying options in a function call.
 Test::PDL is mostly useful in test scripts.
 
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
@@ -73,22 +74,21 @@ with C<test_>: test_short(), test_double(), ...
 
 =head1 VARIABLES
 
-=head2 %OPTIONS
+=head2 %DEFAULTS
 
-The comparison criteria used by Test::PDL can be configured by setting the
-values in the %OPTIONS hash. This can be done directly, by addressing
-%Test::PDL::OPTIONS directly. However, it is preferred that set_options() is
-used instead.
+The default comparison criteria used by Test::PDL can be configured by setting
+the values in the %DEFAULTS hash. This can be done directly, by addressing
+%Test::PDL::DEFAULTS directly.
 
 =over 4
 
-=item TOLERANCE
+=item atol
 
 The tolerance used to compare floating-point values. Initially set to 1e-6.
 This is currently an absolute tolerance, meaning that two values compare equal
 if the absolute value of their difference is below the tolerance.
 
-=item EQUAL_TYPES
+=item require_equal_types
 
 If true, only ndarrays with equal type can be considered equal. If false, the
 types of the ndarrays being compared is not taken into consideration. Defaults
@@ -98,33 +98,26 @@ write tests like
 	is_pdl( $got, pdl([ 1, 3, 5, 6 ]) );
 
 without having to worry about the type of the ndarray being exactly I<double>
-(which is the default type of the pdl() constructor), set EQUAL_TYPES equal to
+(which is the default type of the pdl() constructor), set I<require_equal_types> equal to
 0.
 
 =back
 
 =cut
 
-our %OPTIONS = (
-	TOLERANCE   => 1e-6,
-	EQUAL_TYPES => 1,
+our %DEFAULTS = (
+	atol                => 1e-6,
+	require_equal_types => 1,
 );
 
 =head1 FUNCTIONS
 
 =head2 import
 
-Custom importer that recognizes configuration options specified at use time, as
+Custom importer that recognizes configuration defaults specified at use time, as
 in
 
-	use Test::PDL -equal_types => 0;
-
-This invocation is equivalent to
-
-	use Test::PDL;
-	Test::PDL::set_options( EQUAL_TYPES => 0 );
-
-but is arguably somewhat nicer.
+	use Test::PDL -require_equal_types => 0;
 
 =cut
 
@@ -134,8 +127,10 @@ sub import
 	while( $i < @_ ) {
 		if( $_[ $i ] =~ /^-/ ) {
 			my( $key, $val ) = splice @_, $i, 2;
-			$key =~ s/^-(.*)/\U$1/;
-			set_options( $key, $val );
+			$key =~ s/^-(.*)/$1/;
+			PDL::barf( "invalid name $key" ) unless grep { $key eq $_ } keys %DEFAULTS;
+			PDL::barf( "undefined value for $key" ) unless defined $val;
+			$DEFAULTS{ $key } = $val;
 		}
 		else { $i++ }
 	}
@@ -173,7 +168,10 @@ diagnostics if they don't compare equal.
 
 =for usage # PDL
 
+	is_pdl( $got, $expected );
 	is_pdl( $got, $expected, $test_name );
+	is_pdl( $got, $expected, { test_name => $test_name } );
+	is_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
 the ndarrays are different, or if at least one is not a ndarray. Prints a
@@ -188,13 +186,20 @@ Named after is() from L<Test::More>.
 sub is_pdl
 {
 	require Test::Builder;
-	my ( $got, $expected, $name ) = @_;
+	my ( $got, $expected, $arg ) = @_;
 	my $tb = Test::Builder->new;
-	if( eval { $name->isa('PDL') } ) {
-		$tb->croak( 'error in arguments: test name is a ndarray' );
+	if( eval { $arg->isa('PDL') } ) {
+		$tb->croak( 'error in arguments: third argument is a ndarray' );
 	}
+	my $opt = { %DEFAULTS };
+	my $name;
+	if( $arg ) {
+		if( ref $arg eq 'HASH' ) { $opt = { %$opt, %$arg } }
+		else { $name = $arg }
+	}
+	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
-	my( $ok, $reason ) = eq_pdl($got, $expected);
+	my( $ok, $reason ) = eq_pdl($got, $expected, $opt);
 	if( !$ok ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
@@ -218,7 +223,9 @@ additionally returns a diagnostic string.
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
+	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 	my( $equal, $diag ) = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
@@ -246,7 +253,7 @@ is no implicit conversion from scalar to ndarray.
 
 =item *
 
-The type of both ndarrays must be equal if (and only if) I<EQUAL_TYPES> is true.
+The type of both ndarrays must be equal if (and only if) I<require_equal_types> is true.
 
 =item *
 
@@ -283,7 +290,8 @@ default, the absolute tolerance is 1e-6.
 
 sub eq_pdl
 {
-	my ( $got, $expected ) = @_;
+	my ( $got, $expected, $arg ) = @_;
+	my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
 	my $diag = '';
 	if( not eval { $got->isa('PDL') } ) {
 		$diag = 'received value is not a ndarray';
@@ -291,8 +299,8 @@ sub eq_pdl
 	elsif( not eval { $expected->isa('PDL') } ) {
 		$diag = 'expected value is not a ndarray';
 	}
-	elsif( $OPTIONS{EQUAL_TYPES} && $got->type != $expected->type ) {
-		$diag = 'types do not match (EQUAL_TYPES is true)';
+	elsif( $opt->{require_equal_types} && $got->type != $expected->type ) {
+		$diag = 'types do not match (\'require_equal_types\' is true)';
 	}
 	elsif( $got->ndims != $expected->ndims ) {
 		$diag = 'dimensions do not match in number';
@@ -334,7 +342,7 @@ sub eq_pdl
 			}
 			else {
 				# floating-point comparison must be approximate
-				if( not eval { PDL::all( abs($got - $expected) < $OPTIONS{TOLERANCE} ) } ) {
+				if( not eval { PDL::all( abs($got - $expected) < $opt->{atol} ) } ) {
 					$diag = 'values do not match';
 				}
 			}
@@ -444,37 +452,6 @@ for my $type ( PDL::Types::types ) {
 	}
 	push @EXPORT_OK, $sub_name;
 	push @{ $EXPORT_TAGS{deep} }, $sub_name;
-}
-
-=head2 set_options
-
-=for ref # PDL
-
-Configure the comparison carried out by Test::PDL's testing functions.
-
-=for example # PDL
-
-	# e.g., if a tolerance of 1e-6 is too tight
-	Test::PDL::set_options( TOLERANCE => 1e-4 );
-
-The preferred way to set the options to this module. See %OPTIONS for all
-allowed options. set_options() dies with an error if an unknown option is
-passed. Note that sensible default values are provided for all options, so you
-needn't use this routine if you are fine with the defaults.
-
-This function is not exported. Rather, it must be called as
-
-	Test::PDL::set_options( KEY => VALUE, ... );
-
-=cut
-
-sub set_options
-{
-	while( my( $key, $value ) = splice @_, 0, 2 ) {
-		PDL::barf( "invalid option $key" ) unless grep { $key eq $_ } keys %OPTIONS;
-		PDL::barf( "undefined value for $key" ) unless defined $value;
-		$OPTIONS{ $key } = $value;
-	}
 }
 
 =head1 BUGS

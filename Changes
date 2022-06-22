@@ -2,6 +2,9 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+ - change default-setting to clearer names, remove set_options
+ - add possible options-hash parameter to is_pdl et al
+
 0.20      2022-02-26
 
  - strip out badvals before comparing ndarrays - https://github.com/PDLPorters/pdl/issues/388
