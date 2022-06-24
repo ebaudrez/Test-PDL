@@ -96,11 +96,11 @@ $expected = null;
 ok eq_pdl( $got, $expected ), 'null == empty';
 
 $expected = null;
-$got = pdl( 1,2,3 );
+$got = short( 1,2,3 );
 ok !eq_pdl( $got, $expected, { REASON => \$diag } ), 'pdl( ... ) != null';
 is $diag, 'types do not match (EQUAL_TYPES is true)';
 
-$expected = pdl( 1,2,3 );
+$expected = short( 1,2,3 );
 $got = null;
 ok !eq_pdl( $got, $expected, { REASON => \$diag } ), 'null != pdl( ... )';
 is $diag, 'types do not match (EQUAL_TYPES is true)';
