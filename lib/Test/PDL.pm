@@ -142,21 +142,6 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
-=head2 _approx
-
-Internal function reimplementing the functionality of PDL::approx(), but with a
-tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user (see set_options() and $OPTIONS{TOLERANCE}), and defaults to
-1e-6.
-
-=cut
-
-sub _approx
-{
-	my( $a, $b ) = @_;
-	return abs( $a - $b ) < $OPTIONS{ TOLERANCE };
-}
-
 =head2 _comparison_fails
 
 Internal function which does the real work of comparing two ndarrays. If the
@@ -201,8 +186,9 @@ bad flag is different, if there are no bad values.
 And last but not least, the values themselves are examined one by one. For
 integer types, the comparison is performed exactly, whereas an approximate
 equality is used for floating-point types. The approximate comparison is
-implemented using a private reimplementation of PDL::approx(). See _approx()
-for more information.
+implemented using an absolute tolerance which can be set by supplying an
+argument to C<use pdl>, or by supplying an optional hash to this function. By
+default, the absolute tolerance is 1e-6.
 
 =back
 
@@ -246,7 +232,7 @@ sub _comparison_fails
 	}
 	else {
 		# floating-point comparison must be approximate
-		if( not eval { PDL::all( _approx $got, $expected ) } ) {
+		if( not eval { PDL::all( abs($got - $expected) < $OPTIONS{ TOLERANCE } ) } ) {
 			return 'values do not match';
 		}
 	}
