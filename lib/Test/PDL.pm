@@ -313,7 +313,9 @@ sub is_pdl
 	}
 	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
-	if( my $diag = _comparison_fails $got, $expected, $opt ) {
+	$opt->{diag} = \my $diag;
+	my $ok = eq_pdl($got, $expected, $opt);
+	if( !$ok ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
 		$tb->diag( "    $diag\n",
