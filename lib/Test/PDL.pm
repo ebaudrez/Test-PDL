@@ -24,7 +24,7 @@ package Test::PDL;
 	# not ok 2 - demonstrate the output of a failing test
 	#
 	#   Failed test 'demonstrate the output of a failing test'
-	#   at aux/pod.t line 16.
+	#   at maint/pod.t line 16.
 	#     values do not match
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
@@ -38,7 +38,7 @@ package Test::PDL;
 	# not ok 3 - demonstrate the output of a failing deep comparison
 	#
 	#   Failed test 'demonstrate the output of a failing deep comparison'
-	#   at aux/pod.t line 30.
+	#   at maint/pod.t line 30.
 	# Comparing $data->{"data"} as a ndarray:
 	# dimensions do not match in extent
 	#    got : Long     D [3]        (P    ) [17 0 1]
