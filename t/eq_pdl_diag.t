@@ -37,18 +37,15 @@ $got = -2;
 ok !$ok;
 is $diag, 'received value is not a ndarray';
 
-Test::PDL::set_defaults( EQUAL_TYPES => 0 );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { EQUAL_TYPES => 0 } );
 ok $ok;
 
-Test::PDL::set_defaults( EQUAL_TYPES => 1 );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
 ( $ok, $diag ) = eq_pdl_diag( $got, $expected );
 ok !$ok;
-Test::PDL::set_defaults( EQUAL_TYPES => 0 );
 
 $expected = long( 3 );
 $got = long( 3,4 );
@@ -91,21 +88,20 @@ $got = pdl( 4,5,6,7,8.001,9 );
 # remember that approx() remembers the tolerance across invocations, so we
 # explicitly specify the tolerance at each invocation
 ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-6 } );
 ok !$ok;
 is $diag, 'values do not match';
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.0000001,9 );
 ok all( approx $got, $expected, 1e-6 ), 'differ by less than 0.000001';
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-6 } );
 ok $ok;
 
-Test::PDL::set_defaults( TOLERANCE => 1e-2 );
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
 ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-2 } );
 ok $ok;
 
 $expected = pdl( 0,1,2,3,4 );
@@ -120,13 +116,13 @@ ok $ok;
 
 $expected = null;
 $got = pdl( 1,2,3 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { EQUAL_TYPES => 0 } );
 ok !$ok;
 is $diag, 'values do not match';
 
 $expected = pdl( 1,2,3 );
 $got = null;
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { EQUAL_TYPES => 0 } );
 ok !$ok;
 is $diag, 'values do not match';
 
@@ -136,13 +132,11 @@ $expected = double( 0,1,2.001,3,4 );
 $got = long( 0,1,2,3,4 );
 
 ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
-Test::PDL::set_defaults( TOLERANCE => 1e-2 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
 ok $ok;
 
 ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
-Test::PDL::set_defaults( TOLERANCE => 1e-6 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
 ok !$ok;
 is $diag, 'values do not match';
 
@@ -150,13 +144,11 @@ $expected = short( 0,1,2,3,4 );
 $got = float( 0,1,2.001,3,4 );
 
 ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
-Test::PDL::set_defaults( TOLERANCE => 1e-2 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
 ok $ok;
 
 ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
-Test::PDL::set_defaults( TOLERANCE => 1e-6 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
 ok !$ok;
 is $diag, 'values do not match';
 
@@ -164,13 +156,11 @@ $expected = float( 0,-1,2.001,3,49999.998 );
 $got = double( 0,-0.9999,1.999,3,49999.999 );
 
 ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
-Test::PDL::set_defaults( TOLERANCE => 1e-2 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
 ok $ok;
 
 ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
-Test::PDL::set_defaults( TOLERANCE => 1e-6 );
-( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
 ok !$ok;
 is $diag, 'values do not match';
 

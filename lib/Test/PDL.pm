@@ -61,8 +61,9 @@ our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 With Test::PDL, you can compare two ndarrays for equality. The comparison is
 performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
-configured by setting certain defaults (see set_defaults() and %DEFAULTS below).
-Test::PDL is mostly useful in test scripts.
+configured by setting certain package-wide defaults (see set_defaults() and
+%DEFAULTS below), or by supplying options in a function call. Test::PDL is
+mostly useful in test scripts.
 
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
 
@@ -75,8 +76,8 @@ with C<test_>: test_short(), test_double(), ...
 
 =head2 %DEFAULTS
 
-The comparison criteria used by Test::PDL can be configured by setting the
-values in the %DEFAULTS hash. This can be done directly, by addressing
+The default comparison criteria used by Test::PDL can be configured by setting
+the values in the %DEFAULTS hash. This can be done directly, by addressing
 %Test::PDL::DEFAULTS directly. However, it is preferred that set_defaults() is
 used instead.
 
@@ -142,19 +143,39 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
+=head2 _merge_with_defaults
+
+Internal function to merge the package-wide defaults with the specific options
+supplied to a function. Returns a hash reference.
+
+This function assumes that the manipulated hashes do not contain any embedded
+hashes or arrays, i.e., that all values are scalars, so that a shallow copy of
+the name/value pairs of %DEFAULTS suffices.
+
+=cut
+
+sub _merge_with_defaults
+{
+	my $ref = shift;
+	my $opt = { %DEFAULTS };
+	if( $ref && ref $ref eq 'HASH' ) { $opt = { %$opt, %$ref } }
+	return $opt;
+}
+
 =head2 _approx
 
 Internal function reimplementing the functionality of PDL::approx(), but with a
 tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user (see set_defaults() and $DEFAULTS{TOLERANCE}), and defaults to
-1e-6.
+be set by the user globally (see set_defaults() and $DEFAULTS{TOLERANCE}, which
+defaults to 1e-6), or can be overridden with the optional hash argument.
 
 =cut
 
 sub _approx
 {
-	my( $a, $b ) = @_;
-	return abs( $a - $b ) < $DEFAULTS{ TOLERANCE };
+	my ( $a, $b, $opt ) = @_;
+	$opt = _merge_with_defaults( $opt );
+	return abs( $a - $b ) < $opt->{ TOLERANCE };
 }
 
 =head2 _comparison_fails
@@ -210,14 +231,15 @@ for more information.
 
 sub _comparison_fails
 {
-	my ( $got, $expected ) = @_;
+	my ( $got, $expected, $opt ) = @_;
+	$opt = _merge_with_defaults( $opt );
 	if( not eval { $got->isa('PDL') } ) {
 		return 'received value is not a ndarray';
 	}
 	if( not eval { $expected->isa('PDL') } ) {
 		return 'expected value is not a ndarray';
 	}
-	if( $DEFAULTS{ EQUAL_TYPES } && $got->type != $expected->type ) {
+	if( $opt->{ EQUAL_TYPES } && $got->type != $expected->type ) {
 		return 'types do not match (EQUAL_TYPES is true)';
 	}
 	if( $got->ndims != $expected->ndims ) {
@@ -246,7 +268,7 @@ sub _comparison_fails
 	}
 	else {
 		# floating-point comparison must be approximate
-		if( not eval { PDL::all( _approx $got, $expected ) } ) {
+		if( not eval { PDL::all( _approx $got, $expected, $opt ) } ) {
 			return 'values do not match';
 		}
 	}
@@ -285,7 +307,10 @@ diagnostics if they don't compare equal.
 
 =for usage # PDL
 
+	is_pdl( $got, $expected );
 	is_pdl( $got, $expected, $test_name );
+	is_pdl( $got, $expected, { test_name => $test_name } );
+	is_pdl( $got, $expected, { TOLERANCE => $tolerance, ... } );
 
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
 the ndarrays are different, or if at least one is not a ndarray. Prints a
@@ -300,13 +325,16 @@ Named after is() from L<Test::More>.
 sub is_pdl
 {
 	require Test::Builder;
-	my ( $got, $expected, $name ) = @_;
+	my ( $got, $expected, $arg ) = @_;
+	my $opt = _merge_with_defaults( ref $arg eq 'HASH' ? $arg : {} );
+	my $name = ref $arg ne 'HASH' ? $arg : '';
 	my $tb = Test::Builder->new;
 	if( eval { $name->isa('PDL') } ) {
 		$tb->croak( 'error in arguments: test name is a ndarray' );
 	}
+	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
-	if( my $reason = _comparison_fails $got, $expected ) {
+	if( my $reason = _comparison_fails $got, $expected, $opt ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
 		$tb->diag( "    $reason\n",
@@ -328,6 +356,7 @@ Return true if two ndarrays compare equal, false otherwise.
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
+	my $equal = eq_pdl( $got, $expected, { TOLERANCE => $tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
@@ -339,8 +368,9 @@ outside test suites.
 
 sub eq_pdl
 {
-	my ( $got, $expected ) = @_;
-	return !_comparison_fails( $got, $expected );
+	my ( $got, $expected, $opt ) = @_;
+	$opt = _merge_with_defaults( $opt );
+	return !_comparison_fails( $got, $expected, $opt );
 }
 
 =head2 eq_pdl_diag
@@ -354,6 +384,7 @@ the comparison failed (if it did).
 
 	my( $ok ) = eq_pdl_diag( $got, $expected );
 	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
+	my( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => $tolerance, ... } );
 
 eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
 comparison failed (if it failed). $diag will be false if the comparison
@@ -365,8 +396,9 @@ to support deep comparisons with L<Test::Deep>.
 
 sub eq_pdl_diag
 {
-	my ( $got, $expected ) = @_;
-	my $reason = _comparison_fails( $got, $expected );
+	my ( $got, $expected, $opt ) = @_;
+	$opt = _merge_with_defaults( $opt );
+	my $reason = _comparison_fails( $got, $expected, $opt );
 	if( $reason ) { return 0, $reason }
 	else { return 1 }
 }
@@ -516,6 +548,9 @@ L<PDL>, L<Test::More>, L<Test::Deep>, L<Test::PDL::Deep>
 
 Thanks to PDL Porters Joel Berger, Chris Marshall, and David Mertens for
 feedback and improvements.
+
+Thanks to Ed J and Zakariyya Mughal for feedback, improvements, maintenance of
+the code, and encouragement!
 
 =cut
 
