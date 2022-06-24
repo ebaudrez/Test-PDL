@@ -351,12 +351,15 @@ Return true if two ndarrays compare equal, false otherwise.
 
 	my $equal = eq_pdl( $got, $expected );
 	my $equal = eq_pdl( $got, $expected, { TOLERANCE => $tolerance, ... } );
+	my $equal = eq_pdl( $got, $expected, { REASON => \my $reason } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
-outside test suites.
+outside test suites. eq_pdl() stores the reason why the comparison failed in
+the reference pointed to by C<REASON> (if supplied). Note that $reason will
+only be set if the test fails, so check $equal first!
 
 =cut
 
@@ -364,7 +367,9 @@ sub eq_pdl
 {
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
-	return !_comparison_fails( $got, $expected, $opt );
+	my $reason = _comparison_fails( $got, $expected, $opt );
+	if( $reason && ref $opt->{REASON} ) { ${ $opt->{REASON} } = $reason }
+	return !$reason;
 }
 
 =head2 eq_pdl_diag
@@ -392,8 +397,9 @@ sub eq_pdl_diag
 {
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
-	my $reason = _comparison_fails( $got, $expected, $opt );
-	if( $reason ) { return 0, $reason }
+	$opt->{REASON} = \my $reason;
+	my $ok = eq_pdl( $got, $expected, $opt );
+	if( !$ok ) { return 0, $reason }
 	else { return 1 }
 }
 
