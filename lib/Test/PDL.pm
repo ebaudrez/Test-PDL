@@ -61,9 +61,9 @@ our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 With Test::PDL, you can compare two ndarrays for equality. The comparison is
 performed as thoroughly as possible, comparing types, dimensions, bad value
 patterns, and finally the values themselves. The exact behaviour can be
-configured by setting certain package-wide defaults (see set_defaults() and
-%DEFAULTS below), or by supplying options in a function call. Test::PDL is
-mostly useful in test scripts.
+configured by setting certain package-wide defaults (see %DEFAULTS below), or
+by supplying options in a function call. Test::PDL is mostly useful in test
+scripts.
 
 Test::PDL is to be used with the Perl Data Language (L<PDL>).
 
@@ -78,8 +78,7 @@ with C<test_>: test_short(), test_double(), ...
 
 The default comparison criteria used by Test::PDL can be configured by setting
 the values in the %DEFAULTS hash. This can be done directly, by addressing
-%Test::PDL::DEFAULTS directly. However, it is preferred that set_defaults() is
-used instead.
+%Test::PDL::DEFAULTS directly.
 
 =over 4
 
@@ -120,13 +119,6 @@ in
 
 	use Test::PDL -equal_types => 0;
 
-This invocation is equivalent to
-
-	use Test::PDL;
-	Test::PDL::set_defaults( EQUAL_TYPES => 0 );
-
-but is arguably somewhat nicer.
-
 =cut
 
 sub import
@@ -136,7 +128,9 @@ sub import
 		if( $_[ $i ] =~ /^-/ ) {
 			my( $key, $val ) = splice @_, $i, 2;
 			$key =~ s/^-(.*)/\U$1/;
-			set_defaults( $key, $val );
+			PDL::barf( "invalid name $key" ) unless grep { $key eq $_ } keys %DEFAULTS;
+			PDL::barf( "undefined value for $key" ) unless defined $val;
+			$DEFAULTS{ $key } = $val;
 		}
 		else { $i++ }
 	}
@@ -166,8 +160,8 @@ sub _merge_with_defaults
 
 Internal function reimplementing the functionality of PDL::approx(), but with a
 tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user globally (see set_defaults() and $DEFAULTS{TOLERANCE}, which
-defaults to 1e-6), or can be overridden with the optional hash argument.
+be set by the user globally (see $DEFAULTS{TOLERANCE}, which defaults to 1e-6),
+or can be overridden with the optional hash argument.
 
 =cut
 
@@ -503,37 +497,6 @@ for my $type ( PDL::Types::types ) {
 	}
 	push @EXPORT_OK, $sub_name;
 	push @{ $EXPORT_TAGS{deep} }, $sub_name;
-}
-
-=head2 set_defaults
-
-=for ref # PDL
-
-Configure the comparison carried out by Test::PDL's testing functions.
-
-=for example # PDL
-
-	# e.g., if a tolerance of 1e-6 is too tight
-	Test::PDL::set_defaults( TOLERANCE => 1e-4 );
-
-The preferred way to set the defaults to this module. See %DEFAULTS for all
-allowed defaults. set_defaults() dies with an error if an unknown name is
-passed. Note that sensible default values are provided for all defaults, so you
-needn't use this routine if you are fine with the defaults.
-
-This function is not exported. Rather, it must be called as
-
-	Test::PDL::set_defaults( KEY => VALUE, ... );
-
-=cut
-
-sub set_defaults
-{
-	while( my( $key, $value ) = splice @_, 0, 2 ) {
-		PDL::barf( "invalid name $key" ) unless grep { $key eq $_ } keys %DEFAULTS;
-		PDL::barf( "undefined value for $key" ) unless defined $value;
-		$DEFAULTS{ $key } = $value;
-	}
 }
 
 =head1 BUGS
