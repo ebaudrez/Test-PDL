@@ -31,16 +31,16 @@ test_test( 'rejects non-ndarray arguments' );
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
 test_out( "ok 1 - ndarrays are equal" );
-is_pdl( $got, $expected, { EQUAL_TYPES => 0 } );
-test_test( 'all else being equal, compares equal on differing types when EQUAL_TYPES is false' );
+is_pdl( $got, $expected, { require_equal_types => 0 } );
+test_test( 'all else being equal, compares equal on differing types when \'require_equal_types\' is false' );
 
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
-test_err( '/#\s+types do not match \(EQUAL_TYPES is true\)\n(.|\n)*/' );
-is_pdl( $got, $expected, { EQUAL_TYPES => 1 } );
-test_test( 'catches type mismatch, but only when EQUAL_TYPES is true' );
+test_err( '/#\s+types do not match \([\']require_equal_types[\'] is true\)\n(.|\n)*/' );
+is_pdl( $got, $expected, { require_equal_types => 1 } );
+test_test( 'catches type mismatch, but only when \'require_equal_types\' is true' );
 
 $expected = long( 3 );
 $got = long( 3,4 );
@@ -112,7 +112,7 @@ $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
 ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 test_out( "ok 1 - ndarrays are equal" );
-is_pdl( $got, $expected, { TOLERANCE => 1e-2 } );
+is_pdl( $got, $expected, { atol => 1e-2 } );
 test_test( 'approximate comparison for floating-point data succeeds correctly at user-specified tolerance of 1e-2' );
 
 $expected = pdl( 0,1,2,3,4 );
@@ -134,7 +134,7 @@ test_fail( +4 );
 test_err( '/#\s+values do not match/' );
 test_err( '/#\s+got:.*/' );
 test_err( '/#\s+expected:\s+Null/' );
-is_pdl( $got, $expected, { EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { require_equal_types => 0 } );
 test_test( 'pdl( ... ) != null' );
 
 $expected = pdl( 1,2,3 );
@@ -144,7 +144,7 @@ test_fail( +4 );
 test_err( '/#\s+values do not match/' );
 test_err( '/#\s+got:\s+Null/' );
 test_err( '/#\s+expected:.*/' );
-is_pdl( $got, $expected, { EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { require_equal_types => 0 } );
 test_test( 'null != pdl( ... )' );
 
 note 'mixed-type comparisons';
@@ -154,14 +154,14 @@ $got = long( 0,1,2,3,4 );
 
 ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 test_out( "ok 1 - ndarrays are equal" );
-is_pdl( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 test_test( 'succeeds correctly for long/double' );
 
 ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
 test_err( '/#\s+values do not match\n(.|\n)*/' );
-is_pdl( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 test_test( 'fails correctly for long/double' );
 
 $expected = short( 0,1,2,3,4 );
@@ -169,14 +169,14 @@ $got = float( 0,1,2.001,3,4 );
 
 ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 test_out( "ok 1 - ndarrays are equal" );
-is_pdl( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 test_test( 'succeeds correctly for float/short' );
 
 ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
 test_err( '/#\s+values do not match\n(.|\n)*/' );
-is_pdl( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 test_test( 'fails correctly for float/short' );
 
 $expected = float( 0,-1,2.001,3,49999.998 );
@@ -184,14 +184,14 @@ $got = double( 0,-0.9999,1.999,3,49999.999 );
 
 ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 test_out( "ok 1 - ndarrays are equal" );
-is_pdl( $got, $expected, { TOLERANCE => 1e-2, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-2, require_equal_types => 0 } );
 test_test( 'succeeds correctly for double/float' );
 
 ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
 test_err( '/#\s+values do not match\n(.|\n)*/' );
-is_pdl( $got, $expected, { TOLERANCE => 1e-6, EQUAL_TYPES => 0 } );
+is_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 test_test( 'fails correctly for double/float' );
 
 note 'miscellaneous';

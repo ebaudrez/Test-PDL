@@ -82,13 +82,13 @@ the values in the %DEFAULTS hash. This can be done directly, by addressing
 
 =over 4
 
-=item TOLERANCE
+=item atol
 
 The tolerance used to compare floating-point values. Initially set to 1e-6.
 This is currently an absolute tolerance, meaning that two values compare equal
 if the absolute value of their difference is below the tolerance.
 
-=item EQUAL_TYPES
+=item require_equal_types
 
 If true, only ndarrays with equal type can be considered equal. If false, the
 types of the ndarrays being compared is not taken into consideration. Defaults
@@ -98,7 +98,7 @@ write tests like
 	is_pdl( $got, pdl([ 1, 3, 5, 6 ]) );
 
 without having to worry about the type of the ndarray being exactly I<double>
-(which is the default type of the pdl() constructor), set EQUAL_TYPES equal to
+(which is the default type of the pdl() constructor), set I<require_equal_types> equal to
 0.
 
 =back
@@ -106,8 +106,8 @@ without having to worry about the type of the ndarray being exactly I<double>
 =cut
 
 our %DEFAULTS = (
-	TOLERANCE   => 1e-6,
-	EQUAL_TYPES => 1,
+	atol                => 1e-6,
+	require_equal_types => 1,
 );
 
 =head1 FUNCTIONS
@@ -117,7 +117,7 @@ our %DEFAULTS = (
 Custom importer that recognizes configuration defaults specified at use time, as
 in
 
-	use Test::PDL -equal_types => 0;
+	use Test::PDL -require_equal_types => 0;
 
 =cut
 
@@ -127,7 +127,7 @@ sub import
 	while( $i < @_ ) {
 		if( $_[ $i ] =~ /^-/ ) {
 			my( $key, $val ) = splice @_, $i, 2;
-			$key =~ s/^-(.*)/\U$1/;
+			$key =~ s/^-(.*)/$1/;
 			PDL::barf( "invalid name $key" ) unless grep { $key eq $_ } keys %DEFAULTS;
 			PDL::barf( "undefined value for $key" ) unless defined $val;
 			$DEFAULTS{ $key } = $val;
@@ -160,7 +160,7 @@ sub _merge_with_defaults
 
 Internal function reimplementing the functionality of PDL::approx(), but with a
 tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user globally (see $DEFAULTS{TOLERANCE}, which defaults to 1e-6),
+be set by the user globally (see $DEFAULTS{atol}, which defaults to 1e-6),
 or can be overridden with the optional hash argument.
 
 =cut
@@ -169,7 +169,7 @@ sub _approx
 {
 	my ( $a, $b, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
-	return abs( $a - $b ) < $opt->{ TOLERANCE };
+	return abs( $a - $b ) < $opt->{ atol };
 }
 
 =head2 _comparison_fails
@@ -189,7 +189,7 @@ is no implicit conversion from scalar to ndarray.
 
 =item *
 
-The type of both ndarrays must be equal if (and only if) EQUAL_TYPES is true.
+The type of both ndarrays must be equal if (and only if) I<require_equal_types> is true.
 
 =item *
 
@@ -233,8 +233,8 @@ sub _comparison_fails
 	if( not eval { $expected->isa('PDL') } ) {
 		return 'expected value is not a ndarray';
 	}
-	if( $opt->{ EQUAL_TYPES } && $got->type != $expected->type ) {
-		return 'types do not match (EQUAL_TYPES is true)';
+	if( $opt->{ require_equal_types } && $got->type != $expected->type ) {
+		return 'types do not match (\'require_equal_types\' is true)';
 	}
 	if( $got->ndims != $expected->ndims ) {
 		return 'dimensions do not match in number';
@@ -304,7 +304,7 @@ diagnostics if they don't compare equal.
 	is_pdl( $got, $expected );
 	is_pdl( $got, $expected, $test_name );
 	is_pdl( $got, $expected, { test_name => $test_name } );
-	is_pdl( $got, $expected, { TOLERANCE => $tolerance, ... } );
+	is_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
 the ndarrays are different, or if at least one is not a ndarray. Prints a
@@ -328,10 +328,10 @@ sub is_pdl
 	}
 	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
-	if( my $reason = _comparison_fails $got, $expected, $opt ) {
+	if( my $diag = _comparison_fails $got, $expected, $opt ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
-		$tb->diag( "    $reason\n",
+		$tb->diag( "    $diag\n",
 			   "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
 			   "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected );
 		return $rc;
@@ -350,15 +350,15 @@ Return true if two ndarrays compare equal, false otherwise.
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
-	my $equal = eq_pdl( $got, $expected, { TOLERANCE => $tolerance, ... } );
-	my $equal = eq_pdl( $got, $expected, { REASON => \my $reason } );
+	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
+	my $equal = eq_pdl( $got, $expected, { diag => \my $diag } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites. eq_pdl() stores the reason why the comparison failed in
-the reference pointed to by C<REASON> (if supplied). Note that $reason will
+the reference pointed to by C<diag> (if supplied). Note that $diag will
 only be set if the test fails, so check $equal first!
 
 =cut
@@ -367,9 +367,9 @@ sub eq_pdl
 {
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
-	my $reason = _comparison_fails( $got, $expected, $opt );
-	if( $reason && ref $opt->{REASON} ) { ${ $opt->{REASON} } = $reason }
-	return !$reason;
+	my $diag = _comparison_fails( $got, $expected, $opt );
+	if( $diag && ref $opt->{diag} ) { ${ $opt->{diag} } = $diag }
+	return !$diag;
 }
 
 =head2 eq_pdl_diag
@@ -383,7 +383,7 @@ the comparison failed (if it did).
 
 	my( $ok ) = eq_pdl_diag( $got, $expected );
 	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected, { TOLERANCE => $tolerance, ... } );
+	my( $ok, $diag ) = eq_pdl_diag( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
 comparison failed (if it failed). $diag will be false if the comparison
@@ -397,9 +397,9 @@ sub eq_pdl_diag
 {
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
-	$opt->{REASON} = \my $reason;
+	$opt->{diag} = \my $diag;
 	my $ok = eq_pdl( $got, $expected, $opt );
-	if( !$ok ) { return 0, $reason }
+	if( !$ok ) { return 0, $diag }
 	else { return 1 }
 }
 

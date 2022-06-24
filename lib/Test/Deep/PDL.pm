@@ -31,7 +31,7 @@ sub descend
 {
 	my $self = shift;
 	my $got = shift;
-	my $ok = Test::PDL::eq_pdl( $got, $self->{expected}, { REASON => \$self->data->{diag} } );
+	my $ok = Test::PDL::eq_pdl( $got, $self->{expected}, { diag => \$self->data->{diag} } );
 	return $ok;
 }
 
