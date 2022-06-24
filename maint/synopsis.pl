@@ -8,7 +8,7 @@ use Log::Any::App qw( $log ), -file => 0, -level => 'debug';
 # write synopsis to file
 my $module = file( 'lib', 'Test', 'PDL.pm' );
 my $synopsis = get_synopsis( $module );
-my $out_file = file( 'aux', 'pod.t' );
+my $out_file = file( 'maint', 'pod.t' );
 write_synopsis( $out_file, $synopsis );
 
 # execute synopsis
