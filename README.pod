@@ -117,13 +117,6 @@ This function assumes that the manipulated hashes do not contain any embedded
 hashes or arrays, i.e., that all values are scalars, so that a shallow copy of
 the name/value pairs of %DEFAULTS suffices.
 
-=head2 _approx
-
-Internal function reimplementing the functionality of PDL::approx(), but with a
-tolerance that is not remembered across invocations. Rather, the tolerance can
-be set by the user globally (see $DEFAULTS{atol}, which defaults to 1e-6),
-or can be overridden with the optional hash argument.
-
 =head2 _comparison_fails
 
 Internal function which does the real work of comparing two ndarrays. If the
@@ -168,8 +161,9 @@ bad flag is different, if there are no bad values.
 And last but not least, the values themselves are examined one by one. For
 integer types, the comparison is performed exactly, whereas an approximate
 equality is used for floating-point types. The approximate comparison is
-implemented using a private reimplementation of PDL::approx(). See _approx()
-for more information.
+implemented using an absolute tolerance which can be set by supplying an
+argument to C<use pdl>, or by supplying an optional hash to this function. By
+default, the absolute tolerance is 1e-6.
 
 =back
 
@@ -209,40 +203,30 @@ Named after is() from L<Test::More>.
 
 =for ref # PDL
 
-Return true if two ndarrays compare equal, false otherwise.
+Return true if two ndarrays compare equal, false otherwise. In list context,
+additionally returns a diagnostic string.
 
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
 	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
-	my $equal = eq_pdl( $got, $expected, { diag => \my $diag } );
+	my( $equal, $diag ) = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
-outside test suites. eq_pdl() stores the reason why the comparison failed in
-the reference pointed to by C<diag> (if supplied). Note that $diag will
-only be set if the test fails, so check $equal first!
+outside test suites.
 
-=head2 eq_pdl_diag
+In list context, eq_pdl() returns a list with two elements, the first one being
+a boolean whether the ndarrays compared equal, the second being a diagnostic
+string explaining why the comparison failed (or the empty string, if it didn't
+fail). This is useful in combination with L<Test::Deep>, but might also be
+useful on its own.
 
-=for ref # PDL
-
-Return true if two ndarrays compare equal, false otherwise, and the reason why
-the comparison failed (if it did).
-
-=for usage # PDL
-
-	my( $ok ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected, { atol => $absolute_tolerance, ... } );
-
-eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
-comparison failed (if it failed). $diag will be false if the comparison
-succeeds. Does not need L<Test::Builder>, so you can use it as part of
-something else, without side effects (like generating output). It was written
-to support deep comparisons with L<Test::Deep>.
+eq_pd() does not need L<Test::Builder>, so you can use it as part of something
+else, without side effects (like generating output).
 
 =head2 test_pdl
 
@@ -289,7 +273,7 @@ same thing with
 
 	my $expected = {
 		...,
-		some_field => code( sub { eq_pdl_diag( shift, pdl( ... ) ) } ),
+		some_field => code( sub { eq_pdl( shift, pdl( ... ) ) } ),
 		...
 	};
 

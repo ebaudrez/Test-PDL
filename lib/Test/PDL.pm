@@ -53,7 +53,7 @@ use PDL::Types ();
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
-our @EXPORT_OK = qw( eq_pdl eq_pdl_diag is_pdl test_pdl );
+our @EXPORT_OK = qw( eq_pdl is_pdl test_pdl );
 our %EXPORT_TAGS = ( deep => [ qw( test_pdl ) ] );
 
 =head1 DESCRIPTION
@@ -313,8 +313,7 @@ sub is_pdl
 	}
 	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
-	$opt->{diag} = \my $diag;
-	my $ok = eq_pdl($got, $expected, $opt);
+	my( $ok, $diag ) = eq_pdl($got, $expected, $opt);
 	if( !$ok ) {
 		my $rc = $tb->ok( 0, $name );
 		my $fmt = '%-8T %-12D (%-5S) ';
@@ -332,21 +331,30 @@ sub is_pdl
 
 =for ref # PDL
 
-Return true if two ndarrays compare equal, false otherwise.
+Return true if two ndarrays compare equal, false otherwise. In list context,
+additionally returns a diagnostic string.
 
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
 	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
-	my $equal = eq_pdl( $got, $expected, { diag => \my $diag } );
+	my( $equal, $diag ) = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
-outside test suites. eq_pdl() stores the reason why the comparison failed in
-the reference pointed to by C<diag> (if supplied). Note that $diag will
-only be set if the test fails, so check $equal first!
+outside test suites.
+
+In list context, eq_pdl() returns a list with two elements, the first one being
+a boolean whether the ndarrays compared equal, the second being a diagnostic
+string explaining why the comparison failed (or the empty string, if it didn't
+fail). This is useful in combination with L<Test::Deep>, but might also be
+useful on its own.
+
+eq_pd() does not need L<Test::Builder>, so you can use it as part of something
+else, without side effects (like generating output).
 
 =cut
 
@@ -355,39 +363,7 @@ sub eq_pdl
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
 	my $diag = _comparison_fails( $got, $expected, $opt );
-	if( $diag && ref $opt->{diag} ) { ${ $opt->{diag} } = $diag }
-	return !$diag;
-}
-
-=head2 eq_pdl_diag
-
-=for ref # PDL
-
-Return true if two ndarrays compare equal, false otherwise, and the reason why
-the comparison failed (if it did).
-
-=for usage # PDL
-
-	my( $ok ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected, { atol => $absolute_tolerance, ... } );
-
-eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
-comparison failed (if it failed). $diag will be false if the comparison
-succeeds. Does not need L<Test::Builder>, so you can use it as part of
-something else, without side effects (like generating output). It was written
-to support deep comparisons with L<Test::Deep>.
-
-=cut
-
-sub eq_pdl_diag
-{
-	my ( $got, $expected, $opt ) = @_;
-	$opt = _merge_with_defaults( $opt );
-	$opt->{diag} = \my $diag;
-	my $ok = eq_pdl( $got, $expected, $opt );
-	if( !$ok ) { return 0, $diag }
-	else { return 1 }
+	return wantarray ? ( !$diag, $diag || '' ) : !$diag;
 }
 
 =head2 test_pdl
@@ -435,7 +411,7 @@ same thing with
 
 	my $expected = {
 		...,
-		some_field => code( sub { eq_pdl_diag( shift, pdl( ... ) ) } ),
+		some_field => code( sub { eq_pdl( shift, pdl( ... ) ) } ),
 		...
 	};
 
