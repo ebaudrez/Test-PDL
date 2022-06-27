@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More 0.88;
 use Test::Deep qw( cmp_deeply code );
-use Test::PDL qw( :deep eq_pdl eq_pdl_diag );
+use Test::PDL qw( :deep eq_pdl );
 use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
@@ -71,7 +71,7 @@ test that
 
 	{ data => test_long( @vals ) }
 	{ data => test_pdl( long(@vals) ) }
-	{ data => code( sub { eq_pdl_diag shift, long(@vals) } ) }
+	{ data => code( sub { eq_pdl shift, long(@vals) } ) }
 
 yield the same results.
 
@@ -94,7 +94,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		test_out 'ok 1';
 		cmp_deeply $got, $expected2;
 		test_test "... ($type) also when ndarray is supplied directly (@vals)";
-		my $expected3 = { data => code( sub { eq_pdl_diag shift, $pdl } ) };
+		my $expected3 = { data => code( sub { eq_pdl shift, $pdl } ) };
 		test_out 'ok 1';
 		cmp_deeply $got, $expected3;
 		test_test "... ($type) and it's the same thing as using code() (@vals)";
@@ -122,7 +122,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_diag "'2'",
 		  'and it said',
 		  'received value is not a ndarray';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
+	cmp_deeply $got, { data => code( sub { eq_pdl shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }
 
@@ -147,7 +147,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
 		  'values do not match';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
+	cmp_deeply $got, { data => code( sub { eq_pdl shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }
 
@@ -172,7 +172,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
 		  'types do not match (EQUAL_TYPES is true)';
-	cmp_deeply $got, { data => code( sub { eq_pdl_diag shift, $pdl2 } ) };
+	cmp_deeply $got, { data => code( sub { eq_pdl shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }
 

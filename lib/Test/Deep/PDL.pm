@@ -10,7 +10,7 @@ package Test::Deep::PDL;
 =cut
 
 use Test::Deep::Cmp;
-use Test::PDL qw( eq_pdl_diag );
+require Test::PDL;
 
 =head1 DESCRIPTION
 
@@ -31,8 +31,7 @@ sub descend
 {
 	my $self = shift;
 	my $got = shift;
-	my( $ok, $diag ) = Test::PDL::eq_pdl_diag( $got, $self->{expected} );
-	$self->data->{diag} = $diag;
+	( my $ok, $self->data->{diag} ) = Test::PDL::eq_pdl( $got, $self->{expected} );
 	return $ok;
 }
 

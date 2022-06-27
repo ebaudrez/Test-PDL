@@ -198,11 +198,13 @@ Named after is() from L<Test::More>.
 
 =for ref # PDL
 
-Return true if two ndarrays compare equal, false otherwise.
+Return true if two ndarrays compare equal, false otherwise. In list context,
+additionally returns a diagnostic string.
 
 =for usage # PDL
 
 	my $equal = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
 infrastructure required to write tests with Test::More. It could be used as
@@ -210,23 +212,14 @@ part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites.
 
-=head2 eq_pdl_diag
+In list context, eq_pdl() returns a list with two elements, the first one being
+a boolean whether the ndarrays compared equal, the second being a diagnostic
+string explaining why the comparison failed (or the empty string, if it didn't
+fail). This is useful in combination with L<Test::Deep>, but might also be
+useful on its own.
 
-=for ref # PDL
-
-Return true if two ndarrays compare equal, false otherwise, and the reason why
-the comparison failed (if it did).
-
-=for usage # PDL
-
-	my( $ok ) = eq_pdl_diag( $got, $expected );
-	my( $ok, $diag ) = eq_pdl_diag( $got, $expected );
-
-eq_pdl_diag() is like eq_pdl(), except that it also returns the reason why the
-comparison failed (if it failed). $diag will be false if the comparison
-succeeds. Does not need L<Test::Builder>, so you can use it as part of
-something else, without side effects (like generating output). It was written
-to support deep comparisons with L<Test::Deep>.
+eq_pd() does not need L<Test::Builder>, so you can use it as part of something
+else, without side effects (like generating output).
 
 =head2 test_pdl
 
@@ -273,7 +266,7 @@ same thing with
 
 	my $expected = {
 		...,
-		some_field => code( sub { eq_pdl_diag( shift, pdl( ... ) ) } ),
+		some_field => code( sub { eq_pdl( shift, pdl( ... ) ) } ),
 		...
 	};
 
