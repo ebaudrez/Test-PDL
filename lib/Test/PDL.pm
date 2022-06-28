@@ -142,104 +142,6 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
-=head2 _comparison_fails
-
-Internal function which does the real work of comparing two ndarrays. If the
-comparison fails, _comparison_fails() returns a string containing the reason for
-failure. If the comparison succeeds, _comparison_fails() returns zero.
-
-The criteria for equality are the following:
-
-=over 4
-
-=item *
-
-Both arguments must be ndarrays for the comparison to succeed. Currently, there
-is no implicit conversion from scalar to ndarray.
-
-=item *
-
-The type of both ndarrays must be equal if (and only if) EQUAL_TYPES is true.
-
-=item *
-
-The number of dimensions must be equal. That is, a two-dimensional ndarray only
-compares equal with another two-dimensional ndarray.
-
-=item *
-
-The extent of the dimensions are compared one by one and must match. That is, a
-ndarray with dimensions (5,4) cannot compare equal with a ndarray of dimensions
-(5,3). Note that degenerate dimensions are not treated specially, and thus a
-ndarray with dimensions (5,4,1) is considered different from a ndarray with
-dimensions (5,4).
-
-=item *
-
-For ndarrays that conform in type and shape, the bad value pattern is examined.
-If the two ndarrays have bad values in different positions, the ndarrays are
-considered different. Note that two ndarrays may compare equal even though their
-bad flag is different, if there are no bad values.
-
-=item *
-
-And last but not least, the values themselves are examined one by one. For
-integer types, the comparison is performed exactly, whereas an approximate
-equality is used for floating-point types. The approximate comparison is
-implemented using an absolute tolerance which can be set by supplying an
-argument to C<use pdl>, or by supplying an optional hash to this function. By
-default, the absolute tolerance is 1e-6.
-
-=back
-
-=cut
-
-sub _comparison_fails
-{
-	my ( $got, $expected ) = @_;
-	if( not eval { $got->isa('PDL') } ) {
-		return 'received value is not a ndarray';
-	}
-	if( not eval { $expected->isa('PDL') } ) {
-		return 'expected value is not a ndarray';
-	}
-	if( $OPTIONS{ EQUAL_TYPES } && $got->type != $expected->type ) {
-		return 'types do not match (EQUAL_TYPES is true)';
-	}
-	if( $got->ndims != $expected->ndims ) {
-		return 'dimensions do not match in number';
-	}
-	if( not _dimensions_match( [$got->dims], [$expected->dims] ) ) {
-		return 'dimensions do not match in extent';
-	}
-	# evaluating these only makes sense for ndarrays that conform in shape
-	if( ( $got->badflag == 1 || $expected->badflag == 1 ) &&
-		not eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) } ) {
-		return 'bad value patterns do not match';
-	}
-	return 'values do not match'
-		if ( $got->isempty and !$expected->isempty)
-		or (!$got->isempty and  $expected->isempty);
-	return 0 if $got->isempty and $expected->isempty;
-	# if we get here, bad value patterns are sure to match, remove
-	my $isgood = $got->isgood;
-	$got = $got->where($isgood), $expected = $expected->where($isgood);
-	return 0 if $got->isempty;
-	if( $got->type < PDL::float && $expected->type < PDL::float ) {
-		if( not eval { PDL::all( $got == $expected ) } ) {
-			return 'values do not match';
-		}
-	}
-	else {
-		# floating-point comparison must be approximate
-		if( not eval { PDL::all( abs($got - $expected) < $OPTIONS{ TOLERANCE } ) } ) {
-			return 'values do not match';
-		}
-	}
-	# if we get here, we didn't fail
-	return 0;
-}
-
 =head2 _dimensions_match
 
 Internal function which compares the extent of each of the dimensions of two
@@ -276,7 +178,7 @@ diagnostics if they don't compare equal.
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
 the ndarrays are different, or if at least one is not a ndarray. Prints a
 diagnostic when the comparison fails, with the reason and a brief printout of
-both arguments. See the documentation of _comparison_fails() for the comparison
+both arguments. See the documentation of eq_pdl() for the comparison
 criteria. $test_name is optional.
 
 Named after is() from L<Test::More>.
@@ -333,13 +235,113 @@ useful on its own.
 eq_pd() does not need L<Test::Builder>, so you can use it as part of something
 else, without side effects (like generating output).
 
+The criteria for equality are the following:
+
+=over 4
+
+=item *
+
+Both arguments must be ndarrays for the comparison to succeed. Currently, there
+is no implicit conversion from scalar to ndarray.
+
+=item *
+
+The type of both ndarrays must be equal if (and only if) I<EQUAL_TYPES> is true.
+
+=item *
+
+The number of dimensions must be equal. That is, a two-dimensional ndarray only
+compares equal with another two-dimensional ndarray.
+
+=item *
+
+The extent of the dimensions are compared one by one and must match. That is, a
+ndarray with dimensions (5,4) cannot compare equal with a ndarray of dimensions
+(5,3). Note that degenerate dimensions are not treated specially, and thus a
+ndarray with dimensions (5,4,1) is considered different from a ndarray with
+dimensions (5,4).
+
+=item *
+
+For ndarrays that conform in type and shape, the bad value pattern is examined.
+If the two ndarrays have bad values in different positions, the ndarrays are
+considered different. Note that two ndarrays may compare equal even though their
+bad flag is different, if there are no bad values.
+
+=item *
+
+And last but not least, the values themselves are examined one by one. For
+integer types, the comparison is performed exactly, whereas an approximate
+equality is used for floating-point types. The approximate comparison is
+implemented using an absolute tolerance which can be set by supplying an
+argument to C<use pdl>, or by supplying an optional hash to this function. By
+default, the absolute tolerance is 1e-6.
+
+=back
+
 =cut
 
 sub eq_pdl
 {
 	my ( $got, $expected ) = @_;
-	my $reason = _comparison_fails( $got, $expected );
-	return wantarray ? ( !$reason, $reason || '' ) : !$reason;
+	my $diag = '';
+	if( not eval { $got->isa('PDL') } ) {
+		$diag = 'received value is not a ndarray';
+	}
+	elsif( not eval { $expected->isa('PDL') } ) {
+		$diag = 'expected value is not a ndarray';
+	}
+	elsif( $OPTIONS{EQUAL_TYPES} && $got->type != $expected->type ) {
+		$diag = 'types do not match (EQUAL_TYPES is true)';
+	}
+	elsif( $got->ndims != $expected->ndims ) {
+		$diag = 'dimensions do not match in number';
+	}
+	elsif( not _dimensions_match( [$got->dims], [$expected->dims] ) ) {
+		$diag = 'dimensions do not match in extent';
+	}
+	# evaluating these only makes sense for ndarrays that conform in shape
+	elsif( ( $got->badflag == 1 || $expected->badflag == 1 ) &&
+		not eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) } ) {
+		$diag = 'bad value patterns do not match';
+	}
+	elsif( $got->isempty and !$expected->isempty ) {
+		$diag = 'received an empty ndarray while expecting a non-empty one';
+	}
+	elsif( !$got->isempty and $expected->isempty ) {
+		$diag = 'received a non-empty ndarray while expecting an empty one';
+	}
+	# only compare when both ndarrays are nonempty, because two empty
+	# ndarrays are guaranteed to match
+	elsif( !$got->isempty and !$expected->isempty ) {
+		# if we get here, bad value patterns are sure to match, remove
+		my $isgood = $got->isgood;
+		$got = $got->where($isgood);
+		$expected = $expected->where($isgood);
+		if( $got->isempty && !$expected->isempty ) {
+			# [todo] we don't have tests that test this ...
+			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
+		}
+		elsif( !$got->isempty && $expected->isempty ) {
+			# [todo] we don't have tests that test this ...
+			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
+		}
+		elsif( !$got->isempty && !$expected->isempty ) {
+			if( $got->type < PDL::float && $expected->type < PDL::float ) {
+				if( not eval { PDL::all( $got == $expected ) } ) {
+					$diag = 'values do not match';
+				}
+			}
+			else {
+				# floating-point comparison must be approximate
+				if( not eval { PDL::all( abs($got - $expected) < $OPTIONS{TOLERANCE} ) } ) {
+					$diag = 'values do not match';
+				}
+			}
+		}
+	}
+	my $ok = $diag ? 0 : 1;
+	return wantarray ? ($ok, $diag) : $ok;
 }
 
 =head2 test_pdl

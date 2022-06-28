@@ -135,13 +135,13 @@ $expected = null;
 $got = pdl( 1,2,3 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'pdl( ... ) != null';
-is $diag, 'values do not match';
+is $diag, 'received a non-empty ndarray while expecting an empty one';
 
 $expected = pdl( 1,2,3 );
 $got = null;
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'null != pdl( ... )';
-is $diag, 'values do not match';
+is $diag, 'received an empty ndarray while expecting a non-empty one';
 
 note 'mixed-type comparisons';
 

@@ -115,11 +115,61 @@ This invocation is equivalent to
 
 but is arguably somewhat nicer.
 
-=head2 _comparison_fails
+=head2 _dimensions_match
 
-Internal function which does the real work of comparing two ndarrays. If the
-comparison fails, _comparison_fails() returns a string containing the reason for
-failure. If the comparison succeeds, _comparison_fails() returns zero.
+Internal function which compares the extent of each of the dimensions of two
+ndarrays, one by one. The dimensions must be passed in as two array references.
+Returns 1 if all dimensions match pairwise. Returns 0 otherwise.
+
+This function will not operate correctly if the number of dimensions does not
+match between the ndarrays, so be sure to check that before calling this
+function.
+
+=head2 is_pdl
+
+=for ref # PDL
+
+Run a test comparing a ndarray to an expected ndarray, and fail with detailed
+diagnostics if they don't compare equal.
+
+=for usage # PDL
+
+	is_pdl( $got, $expected, $test_name );
+
+Yields ok if the first two arguments are ndarrays that compare equal, not ok if
+the ndarrays are different, or if at least one is not a ndarray. Prints a
+diagnostic when the comparison fails, with the reason and a brief printout of
+both arguments. See the documentation of eq_pdl() for the comparison
+criteria. $test_name is optional.
+
+Named after is() from L<Test::More>.
+
+=head2 eq_pdl
+
+=for ref # PDL
+
+Return true if two ndarrays compare equal, false otherwise. In list context,
+additionally returns a diagnostic string.
+
+=for usage # PDL
+
+	my $equal = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected );
+
+eq_pdl() contains just the comparison part of is_pdl(), without the
+infrastructure required to write tests with Test::More. It could be used as
+part of a larger test in which the equality of two ndarrays must be verified. By
+itself, eq_pdl() does not generate any output, so it should be safe to use
+outside test suites.
+
+In list context, eq_pdl() returns a list with two elements, the first one being
+a boolean whether the ndarrays compared equal, the second being a diagnostic
+string explaining why the comparison failed (or the empty string, if it didn't
+fail). This is useful in combination with L<Test::Deep>, but might also be
+useful on its own.
+
+eq_pd() does not need L<Test::Builder>, so you can use it as part of something
+else, without side effects (like generating output).
 
 The criteria for equality are the following:
 
@@ -132,7 +182,7 @@ is no implicit conversion from scalar to ndarray.
 
 =item *
 
-The type of both ndarrays must be equal if (and only if) EQUAL_TYPES is true.
+The type of both ndarrays must be equal if (and only if) I<EQUAL_TYPES> is true.
 
 =item *
 
@@ -164,62 +214,6 @@ argument to C<use pdl>, or by supplying an optional hash to this function. By
 default, the absolute tolerance is 1e-6.
 
 =back
-
-=head2 _dimensions_match
-
-Internal function which compares the extent of each of the dimensions of two
-ndarrays, one by one. The dimensions must be passed in as two array references.
-Returns 1 if all dimensions match pairwise. Returns 0 otherwise.
-
-This function will not operate correctly if the number of dimensions does not
-match between the ndarrays, so be sure to check that before calling this
-function.
-
-=head2 is_pdl
-
-=for ref # PDL
-
-Run a test comparing a ndarray to an expected ndarray, and fail with detailed
-diagnostics if they don't compare equal.
-
-=for usage # PDL
-
-	is_pdl( $got, $expected, $test_name );
-
-Yields ok if the first two arguments are ndarrays that compare equal, not ok if
-the ndarrays are different, or if at least one is not a ndarray. Prints a
-diagnostic when the comparison fails, with the reason and a brief printout of
-both arguments. See the documentation of _comparison_fails() for the comparison
-criteria. $test_name is optional.
-
-Named after is() from L<Test::More>.
-
-=head2 eq_pdl
-
-=for ref # PDL
-
-Return true if two ndarrays compare equal, false otherwise. In list context,
-additionally returns a diagnostic string.
-
-=for usage # PDL
-
-	my $equal = eq_pdl( $got, $expected );
-	my( $equal, $diag ) = eq_pdl( $got, $expected );
-
-eq_pdl() contains just the comparison part of is_pdl(), without the
-infrastructure required to write tests with Test::More. It could be used as
-part of a larger test in which the equality of two ndarrays must be verified. By
-itself, eq_pdl() does not generate any output, so it should be safe to use
-outside test suites.
-
-In list context, eq_pdl() returns a list with two elements, the first one being
-a boolean whether the ndarrays compared equal, the second being a diagnostic
-string explaining why the comparison failed (or the empty string, if it didn't
-fail). This is useful in combination with L<Test::Deep>, but might also be
-useful on its own.
-
-eq_pd() does not need L<Test::Builder>, so you can use it as part of something
-else, without side effects (like generating output).
 
 =head2 test_pdl
 
