@@ -213,7 +213,7 @@ test_test( 'custom test name is also displayed correctly when supplied as an opt
 # as the third argument. Since this is probably not what the user intended, an
 # error is raised.
 throws_ok { is_pdl( $got, $expected, pdl(1,1,1,1) ) }
-	qr/^error in arguments: test name is a ndarray at /, 'test name is a ndarray';
+	qr/^error in arguments: third argument is a ndarray at /, 'third argument is a ndarray';
 
 $expected = long( 4,5,6,7,8,9 );
 $expected->badflag( 1 );

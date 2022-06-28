@@ -137,25 +137,6 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
-=head2 _merge_with_defaults
-
-Internal function to merge the package-wide defaults with the specific options
-supplied to a function. Returns a hash reference.
-
-This function assumes that the manipulated hashes do not contain any embedded
-hashes or arrays, i.e., that all values are scalars, so that a shallow copy of
-the name/value pairs of %DEFAULTS suffices.
-
-=cut
-
-sub _merge_with_defaults
-{
-	my $ref = shift;
-	my $opt = { %DEFAULTS };
-	if( $ref && ref $ref eq 'HASH' ) { $opt = { %$opt, %$ref } }
-	return $opt;
-}
-
 =head2 _dimensions_match
 
 Internal function which compares the extent of each of the dimensions of two
@@ -255,8 +236,8 @@ default, the absolute tolerance is 1e-6.
 
 sub eq_pdl
 {
-	my ( $got, $expected, $opt ) = @_;
-	$opt = _merge_with_defaults( $opt );
+	my ( $got, $expected, $arg ) = @_;
+	my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
 	my $diag = '';
 	if( not eval { $got->isa('PDL') } ) {
 		$diag = 'received value is not a ndarray';
@@ -345,11 +326,15 @@ sub is_pdl
 {
 	require Test::Builder;
 	my ( $got, $expected, $arg ) = @_;
-	my $opt = _merge_with_defaults( ref $arg eq 'HASH' ? $arg : {} );
-	my $name = ref $arg ne 'HASH' ? $arg : '';
 	my $tb = Test::Builder->new;
-	if( eval { $name->isa('PDL') } ) {
-		$tb->croak( 'error in arguments: test name is a ndarray' );
+	if( eval { $arg->isa('PDL') } ) {
+		$tb->croak( 'error in arguments: third argument is a ndarray' );
+	}
+	my $opt = { %DEFAULTS };
+	my $name;
+	if( $arg ) {
+		if( ref $arg eq 'HASH' ) { $opt = { %$opt, %$arg } }
+		else { $name = $arg }
 	}
 	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";

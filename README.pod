@@ -108,15 +108,6 @@ in
 
 	use Test::PDL -require_equal_types => 0;
 
-=head2 _merge_with_defaults
-
-Internal function to merge the package-wide defaults with the specific options
-supplied to a function. Returns a hash reference.
-
-This function assumes that the manipulated hashes do not contain any embedded
-hashes or arrays, i.e., that all values are scalars, so that a shallow copy of
-the name/value pairs of %DEFAULTS suffices.
-
 =head2 _dimensions_match
 
 Internal function which compares the extent of each of the dimensions of two
