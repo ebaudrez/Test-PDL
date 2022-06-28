@@ -156,11 +156,56 @@ sub _merge_with_defaults
 	return $opt;
 }
 
-=head2 _comparison_fails
+=head2 _dimensions_match
 
-Internal function which does the real work of comparing two ndarrays. If the
-comparison fails, _comparison_fails() returns a string containing the reason for
-failure. If the comparison succeeds, _comparison_fails() returns zero.
+Internal function which compares the extent of each of the dimensions of two
+ndarrays, one by one. The dimensions must be passed in as two array references.
+Returns 1 if all dimensions match pairwise. Returns 0 otherwise.
+
+This function will not operate correctly if the number of dimensions does not
+match between the ndarrays, so be sure to check that before calling this
+function.
+
+=cut
+
+sub _dimensions_match
+{
+	my @A = @{ +shift };
+	my @B = @{ +shift };
+	while( my $a = shift @A and my $b = shift @B ) {
+		if( $a != $b ) { return 0 }
+	}
+	return 1;
+}
+
+=head2 eq_pdl
+
+=for ref # PDL
+
+Return true if two ndarrays compare equal, false otherwise. In list context,
+additionally returns a diagnostic string.
+
+=for usage # PDL
+
+	my $equal = eq_pdl( $got, $expected );
+	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
+	my( $equal, $diag ) = eq_pdl( $got, $expected );
+	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
+
+eq_pdl() contains just the comparison part of is_pdl(), without the
+infrastructure required to write tests with Test::More. It could be used as
+part of a larger test in which the equality of two ndarrays must be verified. By
+itself, eq_pdl() does not generate any output, so it should be safe to use
+outside test suites.
+
+In list context, eq_pdl() returns a list with two elements, the first one being
+a boolean whether the ndarrays compared equal, the second being a diagnostic
+string explaining why the comparison failed (or the empty string, if it didn't
+fail). This is useful in combination with L<Test::Deep>, but might also be
+useful on its own.
+
+eq_pd() does not need L<Test::Builder>, so you can use it as part of something
+else, without side effects (like generating output).
 
 The criteria for equality are the following:
 
@@ -208,73 +253,68 @@ default, the absolute tolerance is 1e-6.
 
 =cut
 
-sub _comparison_fails
+sub eq_pdl
 {
 	my ( $got, $expected, $opt ) = @_;
 	$opt = _merge_with_defaults( $opt );
+	my $diag = '';
 	if( not eval { $got->isa('PDL') } ) {
-		return 'received value is not a ndarray';
+		$diag = 'received value is not a ndarray';
 	}
-	if( not eval { $expected->isa('PDL') } ) {
-		return 'expected value is not a ndarray';
+	elsif( not eval { $expected->isa('PDL') } ) {
+		$diag = 'expected value is not a ndarray';
 	}
-	if( $opt->{ require_equal_types } && $got->type != $expected->type ) {
-		return 'types do not match (\'require_equal_types\' is true)';
+	elsif( $opt->{ require_equal_types } && $got->type != $expected->type ) {
+		$diag = 'types do not match (\'require_equal_types\' is true)';
 	}
-	if( $got->ndims != $expected->ndims ) {
-		return 'dimensions do not match in number';
+	elsif( $got->ndims != $expected->ndims ) {
+		$diag = 'dimensions do not match in number';
 	}
-	if( not _dimensions_match( [$got->dims], [$expected->dims] ) ) {
-		return 'dimensions do not match in extent';
+	elsif( not _dimensions_match( [$got->dims], [$expected->dims] ) ) {
+		$diag = 'dimensions do not match in extent';
 	}
 	# evaluating these only makes sense for ndarrays that conform in shape
-	if( ( $got->badflag == 1 || $expected->badflag == 1 ) &&
+	elsif( ( $got->badflag == 1 || $expected->badflag == 1 ) &&
 		not eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) } ) {
-		return 'bad value patterns do not match';
+		$diag = 'bad value patterns do not match';
 	}
-	return 'values do not match'
-		if ( $got->isempty and !$expected->isempty)
-		or (!$got->isempty and  $expected->isempty);
-	return 0 if $got->isempty and $expected->isempty;
-	# if we get here, bad value patterns are sure to match, remove
-	my $isgood = $got->isgood;
-	$got = $got->where($isgood), $expected = $expected->where($isgood);
-	return 0 if $got->isempty;
-	if( $got->type < PDL::float && $expected->type < PDL::float ) {
-		if( not eval { PDL::all( $got == $expected ) } ) {
-			return 'values do not match';
+	elsif( $got->isempty and !$expected->isempty ) {
+		$diag = 'received an empty ndarray while expecting a non-empty one';
+	}
+	elsif( !$got->isempty and $expected->isempty ) {
+		$diag = 'received a non-empty ndarray while expecting an empty one';
+	}
+	# only compare when both ndarrays are nonempty, because two empty
+	# ndarrays are guaranteed to match
+	elsif( !$got->isempty and !$expected->isempty ) {
+		# if we get here, bad value patterns are sure to match, remove
+		my $isgood = $got->isgood;
+		$got = $got->where($isgood);
+		$expected = $expected->where($isgood);
+		if( $got->isempty && !$expected->isempty ) {
+			# [todo] we don't have tests that test this ...
+			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
+		}
+		elsif( !$got->isempty && $expected->isempty ) {
+			# [todo] we don't have tests that test this ...
+			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
+		}
+		elsif( !$got->isempty && !$expected->isempty ) {
+			if( $got->type < PDL::float && $expected->type < PDL::float ) {
+				if( not eval { PDL::all( $got == $expected ) } ) {
+					$diag = 'values do not match';
+				}
+			}
+			else {
+				# floating-point comparison must be approximate
+				if( not eval { PDL::all( abs($got - $expected) < $opt->{atol} ) } ) {
+					$diag = 'values do not match';
+				}
+			}
 		}
 	}
-	else {
-		# floating-point comparison must be approximate
-		if( not eval { PDL::all( abs($got - $expected) < $opt->{atol} ) } ) {
-			return 'values do not match';
-		}
-	}
-	# if we get here, we didn't fail
-	return 0;
-}
-
-=head2 _dimensions_match
-
-Internal function which compares the extent of each of the dimensions of two
-ndarrays, one by one. The dimensions must be passed in as two array references.
-Returns 1 if all dimensions match pairwise. Returns 0 otherwise.
-
-This function will not operate correctly if the number of dimensions does not
-match between the ndarrays, so be sure to check that before calling this
-function.
-
-=cut
-
-sub _dimensions_match
-{
-	my @A = @{ +shift };
-	my @B = @{ +shift };
-	while( my $a = shift @A and my $b = shift @B ) {
-		if( $a != $b ) { return 0 }
-	}
-	return 1;
+	my $ok = $diag ? 0 : 1;
+	return wantarray ? ($ok, $diag) : $ok;
 }
 
 =head2 is_pdl
@@ -294,7 +334,7 @@ diagnostics if they don't compare equal.
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
 the ndarrays are different, or if at least one is not a ndarray. Prints a
 diagnostic when the comparison fails, with the reason and a brief printout of
-both arguments. See the documentation of _comparison_fails() for the comparison
+both arguments. See the documentation of eq_pdl() for the comparison
 criteria. $test_name is optional.
 
 Named after is() from L<Test::More>.
@@ -325,45 +365,6 @@ sub is_pdl
 	else {
 		return $tb->ok( 1, $name );
 	}
-}
-
-=head2 eq_pdl
-
-=for ref # PDL
-
-Return true if two ndarrays compare equal, false otherwise. In list context,
-additionally returns a diagnostic string.
-
-=for usage # PDL
-
-	my $equal = eq_pdl( $got, $expected );
-	my $equal = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
-	my( $equal, $diag ) = eq_pdl( $got, $expected );
-	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
-
-eq_pdl() contains just the comparison part of is_pdl(), without the
-infrastructure required to write tests with Test::More. It could be used as
-part of a larger test in which the equality of two ndarrays must be verified. By
-itself, eq_pdl() does not generate any output, so it should be safe to use
-outside test suites.
-
-In list context, eq_pdl() returns a list with two elements, the first one being
-a boolean whether the ndarrays compared equal, the second being a diagnostic
-string explaining why the comparison failed (or the empty string, if it didn't
-fail). This is useful in combination with L<Test::Deep>, but might also be
-useful on its own.
-
-eq_pd() does not need L<Test::Builder>, so you can use it as part of something
-else, without side effects (like generating output).
-
-=cut
-
-sub eq_pdl
-{
-	my ( $got, $expected, $opt ) = @_;
-	$opt = _merge_with_defaults( $opt );
-	my $diag = _comparison_fails( $got, $expected, $opt );
-	return wantarray ? ( !$diag, $diag || '' ) : !$diag;
 }
 
 =head2 test_pdl
