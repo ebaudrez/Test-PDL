@@ -50,6 +50,7 @@ use strict;
 use warnings;
 use PDL::Lite;
 use PDL::Types ();
+use Test::PDL::Helper 'exceeds_tolerances';
 
 use base qw( Exporter );
 our @EXPORT = qw( is_pdl );
@@ -84,9 +85,7 @@ the values in the %DEFAULTS hash. This can be done directly, by addressing
 
 =item atol
 
-The tolerance used to compare floating-point values. Initially set to 1e-6.
-This is currently an absolute tolerance, meaning that two values compare equal
-if the absolute value of their difference is below the tolerance.
+The absolute tolerance used to compare floating-point values. Initially set to 1e-6.
 
 =item require_equal_types
 
@@ -101,6 +100,10 @@ without having to worry about the type of the ndarray being exactly I<double>
 (which is the default type of the pdl() constructor), set I<require_equal_types> equal to
 0.
 
+=item rtol
+
+The relative tolerance used to compare floating-point values. Initially set to 1e-6.
+
 =back
 
 =cut
@@ -108,6 +111,7 @@ without having to worry about the type of the ndarray being exactly I<double>
 our %DEFAULTS = (
 	atol                => 1e-6,
 	require_equal_types => 1,
+	rtol                => 1e-6,
 );
 
 =head1 FUNCTIONS
@@ -280,9 +284,17 @@ bad flag is different, if there are no bad values.
 And last but not least, the values themselves are examined one by one. For
 integer types, the comparison is performed exactly, whereas an approximate
 equality is used for floating-point types. The approximate comparison is
-implemented using an absolute tolerance which can be set by supplying an
-argument to C<use Test::PDL>, or by supplying an optional hash to this function. By
-default, the absolute tolerance is 1e-6.
+implemented using a combination of relative and absolute tolerances, which can
+be set by supplying an argument to C<use Test::PDL>, or by supplying an
+optional hash to this function. By default, the absolute and relative
+tolerances are both equal to 1e-6. The user can specify a pure relative
+tolerance by specifying C<atol =E<gt> 0>, and a pure absolute tolerance by
+specifying C<rtol =E<gt> 0>. If both tolerances are specified, values compare
+equal if I<either> their difference is lower than the absolute tolerance I<or>
+their relative difference (with respect to the expected value) is lower than
+the relative tolerance. For expected values equal to zero, relative differences
+(with respect to the expected value) make no sense, and the use of combined
+absolute and relative tolerances is recommended.
 
 =back
 
@@ -292,6 +304,12 @@ sub eq_pdl
 {
 	my ( $got, $expected, $arg ) = @_;
 	my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
+	# check tolerances
+	PDL::barf( 'need an absolute or a relative tolerance, or both' ) unless defined $opt->{atol} || defined $opt->{rtol};
+	PDL::barf( 'absolute tolerance cannot be negative' ) if defined $opt->{atol} && $opt->{atol} < 0;
+	PDL::barf( 'relative tolerance cannot be negative' ) if defined $opt->{rtol} && $opt->{rtol} < 0;
+	$opt->{atol} = 0 unless defined $opt->{atol};
+	$opt->{rtol} = 0 unless defined $opt->{rtol};
 	my $diag = '';
 	if( not eval { $got->isa('PDL') } ) {
 		$diag = 'received value is not a ndarray';
@@ -334,15 +352,14 @@ sub eq_pdl
 			# [todo] we don't have tests that test this ...
 			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
 		}
-		elsif( !$got->isempty && !$expected->isempty ) {
+		# test for exact quality first
+		elsif( !$got->isempty && !$expected->isempty && not eval { PDL::all( $got == $expected ) } ) {
 			if( $got->type < PDL::float && $expected->type < PDL::float ) {
-				if( not eval { PDL::all( $got == $expected ) } ) {
-					$diag = 'values do not match';
-				}
+				$diag = 'values do not match';
 			}
 			else {
 				# floating-point comparison must be approximate
-				if( not eval { PDL::all( abs($got - $expected) < $opt->{atol} ) } ) {
+				if( exceeds_tolerances( abs($got - $expected), abs($expected), $opt->{rtol}, $opt->{atol} ) ) {
 					$diag = 'values do not match';
 				}
 			}
