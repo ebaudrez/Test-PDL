@@ -18,6 +18,7 @@ package t1;
 ::cmp_deeply \%Test::PDL::DEFAULTS, {
 	atol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	require_equal_types => 1,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 };
 ::ok ! __PACKAGE__->can( 'is_pdl' );
 
@@ -27,6 +28,7 @@ Test::PDL->import();
 ::cmp_deeply \%Test::PDL::DEFAULTS, {
 	atol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	require_equal_types => 1,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 };
 ::ok __PACKAGE__->can( 'is_pdl' );
 
@@ -36,6 +38,7 @@ Test::PDL->import( -require_equal_types => 0 );
 ::cmp_deeply \%Test::PDL::DEFAULTS, {
 	atol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	require_equal_types => 0,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 };
 $Test::PDL::DEFAULTS{require_equal_types} = 1; # explicitly reset so no need reload
 ::ok __PACKAGE__->can( 'is_pdl' );
@@ -46,6 +49,7 @@ Test::PDL->import( -atol => 1e-8 );
 ::cmp_deeply \%Test::PDL::DEFAULTS, {
 	atol                => ::code( sub { abs( $_[0]/1e-8 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	require_equal_types => 1,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 };
 ::ok __PACKAGE__->can( 'is_pdl' );
 
@@ -55,6 +59,27 @@ Test::PDL->import( -atol => 1e-8, -require_equal_types => 0, 'is_pdl' );
 ::cmp_deeply \%Test::PDL::DEFAULTS, {
 	atol                => ::code( sub { abs( $_[0]/1e-8 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 	require_equal_types => 0,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
+};
+::ok __PACKAGE__->can( 'is_pdl' );
+
+# "reset"
+package t5;
+Test::PDL->import( -atol => 1e-6, -require_equal_types => 1, -rtol => 1e-6 );
+::cmp_deeply \%Test::PDL::DEFAULTS, {
+	atol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
+	require_equal_types => 1,
+	rtol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
+};
+::ok __PACKAGE__->can( 'is_pdl' );
+
+# use Test::PDL -rtol => 1e-8;
+package t5;
+Test::PDL->import( -rtol => 1e-8 );
+::cmp_deeply \%Test::PDL::DEFAULTS, {
+	atol                => ::code( sub { abs( $_[0]/1e-6 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
+	require_equal_types => 1,
+	rtol                => ::code( sub { abs( $_[0]/1e-8 - 1 ) < 1e-6 ? 1 : ( 0, 'tolerance beyond specified value' ) } ),
 };
 ::ok __PACKAGE__->can( 'is_pdl' );
 

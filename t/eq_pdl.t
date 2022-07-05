@@ -180,13 +180,121 @@ note 'tests with values of significantly different magnitudes, no zeroes';
 $expected = double( 1e+3, 1, 1e-3 );
 $got = double( 1.001e+3, 1.001, 1.001e-3 );
 
-( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0.999 } );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0.999, rtol => 0 } );
 ok !$ok, 'still fails with an absolute tolerance of 0.999';
 is $diag, 'values do not match';
 
-( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1 } );
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1, rtol => 0 } );
 ok $ok, 'passes with an absolute tolerance of 1';
 is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-4, rtol => 0 } );
+ok !$ok, 'fails for case with different magnitudes and pure absolute tolerance of 1e-4';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2, rtol => 0 } );
+ok !$ok, 'still fails with an absolute tolerance of 1e-2';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 10, rtol => 0 } );
+ok $ok, 'needs an absolute tolerance of 10 to pass';
+is $diag, '';
+
+# notice the other values that are way off ...
+( $ok, $diag ) = run_eq_pdl( double( 1.001e+3, 9, 9 ), $expected, { atol => 10, rtol => 0 } );
+ok $ok, '... and this leads to large errors in the smaller components';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-4 } );
+ok !$ok, 'should not pass with a pure relative tolerance of 1e-4';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-2 } );
+ok $ok, 'but passes with a pure relative tolerance of 1e-2';
+is $diag, '';
+
+################################################################################
+note 'tests with values of significantly different magnitudes, with zeroes';
+$expected = double( 1e+3, 1, 1e-9, 0 );
+$got = double( 1.00001e+3, .99999, 1.00001e-9, 1e-5 );
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-6 } );
+ok !$ok, 'fails at pure relative tolerance of 1e-6';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-4 } );
+ok !$ok, 'but also fails at pure relative tolerance of 1e-4';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-4, rtol => 1e-4 } );
+ok $ok, 'needs both absolute and relative tolerances to pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double( 1e+3, 1, 0.001, 0 ), $expected, { atol => 1e-4, rtol => 1e-4 } );
+ok !$ok, 'combination of relative and absolute tolerances avoids large relative errors in small components'; # (provided atol is not too high)
+is $diag, 'values do not match';
+
+################################################################################
+note 'test perfect equality';
+
+( $ok, $diag ) = run_eq_pdl( pdl(1), pdl(1), { atol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( pdl(0), pdl(0), { atol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( pdl(0), pdl(0), { rtol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( pdl(-1e20), pdl(-1e20), { atol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( pdl(-1e-20), pdl(-1e-20), { atol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double( 0,0,0 ), double( 0,0,0 ), { atol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double( 0,0,0 ), double( 0,0,0 ), { rtol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double( 0,0,0 ), double( 0,0,0 ), { atol => 1e-10, rtol => 1e-10 } );
+ok $ok, 'perfectly equal ndarrays should always pass';
+is $diag, '';
+
+################################################################################
+note 'test tolerance "sharpness"';
+
+( $ok, $diag ) = run_eq_pdl( double(1.99), double(1), { atol => 0, rtol => 1 } );
+ok $ok, 'passes correctly within tolerance';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double(1.99), double(1), { atol => 1, rtol => 0 } );
+ok $ok, 'passes correctly within tolerance';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double(1.99), double(1), { atol => 1, rtol => 1 } );
+ok $ok, 'passes correctly within tolerance';
+is $diag, '';
+
+( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 0, rtol => 1 } );
+ok !$ok, 'fails correctly just outside of tolerance';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 1, rtol => 0 } );
+ok !$ok, 'fails correctly just outside of tolerance';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 1, rtol => 1 } );
+ok !$ok, 'combined tolerances should not yield a larger comparison margin';
+is $diag, 'values do not match';
 
 ################################################################################
 note 'miscellaneous';
