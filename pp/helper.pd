@@ -1,0 +1,60 @@
+# use pp_addbegin() to force =head1 NAME to appear before =head1 FUNCTIONS
+pp_addbegin(<<'EOD');
+
+# ABSTRACT: PP helper for Test::PDL
+
+=head1 NAME
+
+Test::PDL::Helper - PP helper for Test::PDL
+
+=head1 DESCRIPTION
+
+This module contains the implementation of a PP helper for Test::PDL.
+
+=cut
+
+# silence Test::Pod::Coverage warning
+=for Pod::Coverage set_boundscheck set_debugging
+
+=cut
+
+EOD
+
+our $VERSION = '0.21';
+pp_setversion($VERSION);
+
+# exceeds_tolerances
+pp_def('exceeds_tolerances',
+	Pars => 'abs_diff(n); ref_value(n); [o] result()',
+	OtherPars => 'double rtol; double atol',
+	Code => q{
+		$result() = 0;
+		loop(n) %{
+			if( $abs_diff() >= $COMP(rtol) * $ref_value() && $abs_diff() >= $COMP(atol) ) {
+				$result() = 1;
+				break;
+			}
+		%}
+	},
+);
+
+pp_addpm(<<'EOD');
+
+=head1 AUTHOR
+
+Edward Baudrez <ebaudrez@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2022 by Edward Baudrez.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
+EOD
+
+pp_done();
+
+# vim:set filetype=perl:
