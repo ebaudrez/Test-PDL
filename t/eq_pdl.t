@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use PDL;
 use Test::PDL qw( eq_pdl );
-use Test::NoWarnings qw(had_no_warnings); $Test::NoWarnings::do_end_test = 0;
+my @warns; $SIG{__WARN__} = sub {push @warns, @_};
 
 my ( $got, $expected );
 
@@ -139,5 +139,5 @@ $got = long( 4,5,6,7,8,9 );
 $got->badflag( 0 );
 ok eq_pdl( $got, $expected ), "isn't fooled by differing badflags";
 
-had_no_warnings;
+is "@warns", "", "no warnings";
 done_testing;

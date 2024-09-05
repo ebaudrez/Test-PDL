@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 use PDL;
 use Test::PDL qw( eq_pdl_diag );
-use Test::NoWarnings qw(had_no_warnings); $Test::NoWarnings::do_end_test = 0;
+my @warns; $SIG{__WARN__} = sub {push @warns, @_};
 
 # remember that ok() forces scalar context on the condition it tests, the
 # prototype being ok($;$)
@@ -183,5 +183,5 @@ $got->badflag( 0 );
 ( $ok, $diag ) = eq_pdl_diag( $got, $expected );
 ok $ok;
 
-had_no_warnings;
+is "@warns", "", "no warnings";
 done_testing;

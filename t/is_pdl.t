@@ -1,5 +1,3 @@
-# the tests for Test::PDL
-
 use strict;
 use warnings;
 
@@ -8,7 +6,7 @@ use Test::Builder::Tester;
 use Test::Exception;
 use PDL;
 use Test::PDL;
-use Test::NoWarnings qw(had_no_warnings); $Test::NoWarnings::do_end_test = 0;
+my @warns; $SIG{__WARN__} = sub {push @warns, @_};
 
 my ( $got, $expected );
 
@@ -242,5 +240,5 @@ lives_ok { Test::PDL::set_options(
 is( $Test::PDL::OPTIONS{TOLERANCE}, 1e-4, 'TOLERANCE set correctly' );
 is( $Test::PDL::OPTIONS{EQUAL_TYPES}, 2, 'EQUAL_TYPES set correctly' );
 
-had_no_warnings;
+is "@warns", "", "no warnings";
 done_testing;
