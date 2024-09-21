@@ -274,7 +274,7 @@ And last but not least, the values themselves are examined one by one. For
 integer types, the comparison is performed exactly, whereas an approximate
 equality is used for floating-point types. The approximate comparison is
 implemented using an absolute tolerance which can be set by supplying an
-argument to C<use pdl>, or by supplying an optional hash to this function. By
+argument to C<use Test::PDL>, or by supplying an optional hash to this function. By
 default, the absolute tolerance is 1e-6.
 
 =back
