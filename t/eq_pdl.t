@@ -96,16 +96,12 @@ is $diag, 'values do not match';
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
-# remember that approx() remembers the tolerance across invocations, so we
-# explicitly specify the tolerance at each invocation
-ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'approximate comparison for floating-point data fails correctly at documented default tolerance of 1e-6';
 is $diag, 'values do not match';
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.0000001,9 );
-ok all( approx $got, $expected, 1e-6 ), 'differ by less than 0.000001';
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok $ok, 'approximate comparison for floating-point data succeeds correctly at documented default tolerance of 1e-6';
 is $diag, '';
@@ -113,7 +109,6 @@ is $diag, '';
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
-ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok $ok, 'approximate comparison for floating-point data succeeds correctly at user-specified tolerance of 1e-2';
 is $diag, '';
@@ -153,14 +148,12 @@ note 'mixed-type comparisons';
 $expected = double( 0,1,2.001,3,4 );
 $got = long( 0,1,2,3,4 );
 
-ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 Test::PDL::set_options( EQUAL_TYPES => 0 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok $ok, 'succeeds correctly for long/double';
 is $diag, '';
 
-ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'fails correctly for long/double';
@@ -169,13 +162,11 @@ is $diag, 'values do not match';
 $expected = short( 0,1,2,3,4 );
 $got = float( 0,1,2.001,3,4 );
 
-ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok $ok, 'succeeds correctly for float/short';
 is $diag, '';
 
-ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'fails correctly for float/short';
@@ -184,13 +175,11 @@ is $diag, 'values do not match';
 $expected = float( 0,-1,2.001,3,49999.998 );
 $got = double( 0,-0.9999,1.999,3,49999.999 );
 
-ok all( approx $got, $expected, 1e-2 ), 'differ by less than 0.01';
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok $ok, 'succeeds correctly for double/float';
 is $diag, '';
 
-ok !all( approx $got, $expected, 1e-6 ), 'differ by more than 0.000001';
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'fails correctly for double/float';

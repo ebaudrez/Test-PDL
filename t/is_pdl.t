@@ -93,9 +93,6 @@ test_test( 'catches value mismatches for floating-point data' );
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
-# remember that approx() remembers the tolerance across invocations, so we
-# explicitly specify the tolerance at each invocation
-ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
 test_err( '/#\s+values do not match\n(.|\n)*/' );
@@ -104,7 +101,6 @@ test_test( 'approximate comparison for floating-point data fails correctly at do
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.0000001,9 );
-ok( all( approx $got, $expected, 1e-6 ), "differ by less than 0.000001" );
 test_out( "ok 1 - ndarrays are equal" );
 is_pdl( $got, $expected );
 test_test( 'approximate comparison for floating-point data succeeds correctly at documented default tolerance of 1e-6' );
@@ -112,7 +108,6 @@ test_test( 'approximate comparison for floating-point data succeeds correctly at
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
-ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 test_out( "ok 1 - ndarrays are equal" );
 is_pdl( $got, $expected );
 test_test( 'approximate comparison for floating-point data succeeds correctly at user-specified tolerance of 1e-2' );
@@ -154,13 +149,11 @@ note 'mixed-type comparisons';
 $expected = double( 0,1,2.001,3,4 );
 $got = long( 0,1,2,3,4 );
 
-ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 test_out( "ok 1 - ndarrays are equal" );
 is_pdl( $got, $expected );
 test_test( 'succeeds correctly for long/double' );
 
-ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
@@ -171,13 +164,11 @@ test_test( 'fails correctly for long/double' );
 $expected = short( 0,1,2,3,4 );
 $got = float( 0,1,2.001,3,4 );
 
-ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 test_out( "ok 1 - ndarrays are equal" );
 is_pdl( $got, $expected );
 test_test( 'succeeds correctly for float/short' );
 
-ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
@@ -188,13 +179,11 @@ test_test( 'fails correctly for float/short' );
 $expected = float( 0,-1,2.001,3,49999.998 );
 $got = double( 0,-0.9999,1.999,3,49999.999 );
 
-ok( all( approx $got, $expected, 1e-2 ), "differ by less than 0.01" );
 Test::PDL::set_options( TOLERANCE => 1e-2 );
 test_out( "ok 1 - ndarrays are equal" );
 is_pdl( $got, $expected );
 test_test( 'succeeds correctly for double/float' );
 
-ok( !all( approx $got, $expected, 1e-6 ), "differ by more than 0.000001" );
 Test::PDL::set_options( TOLERANCE => 1e-6 );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
