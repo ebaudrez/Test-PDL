@@ -490,6 +490,9 @@ L<PDL>, L<Test::More>, L<Test::Deep>, L<Test::PDL::Deep>
 Thanks to PDL Porters Joel Berger, Chris Marshall, and David Mertens for
 feedback and improvements.
 
+Thanks to Ed J, Zakariyya Mughal, and Diab Jerius for feedback, improvements,
+maintenance of the code, and encouragement!
+
 =cut
 
 1;
