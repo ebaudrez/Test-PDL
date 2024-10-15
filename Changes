@@ -6,6 +6,7 @@ Revision history for Test::PDL
  - add possible options-hash parameter to is_pdl et al
  - change tolerance behaviour from "diff < tol" to "diff <= tol"
  - negative tolerance now an error
+ - tolerances now applied to integers
 
 0.20      2022-02-26
 

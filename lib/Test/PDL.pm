@@ -84,9 +84,9 @@ the values in the %DEFAULTS hash. This can be done directly, by addressing
 
 =item atol
 
-The tolerance used to compare floating-point values. Initially set to 1e-6.
+The tolerance used to compare values. Initially set to 1e-6.
 This is currently an absolute tolerance, meaning that two values compare equal
-if the absolute value of their difference is below the tolerance.
+if the absolute value of their difference is below or equal to the tolerance.
 
 =item require_equal_types
 
@@ -277,9 +277,9 @@ bad flag is different, if there are no bad values.
 
 =item *
 
-And last but not least, the values themselves are examined one by one. For
-integer types, the comparison is performed exactly, whereas an approximate
-equality is used for floating-point types. The approximate comparison is
+And last but not least, the values themselves are examined one by one.
+As of 0.21, both integer and floating-point types are compared approximately.
+The approximate comparison is
 implemented using an absolute tolerance which can be set by supplying an
 argument to C<use Test::PDL>, or by supplying an optional hash to this
 function. By default, the absolute tolerance is 1e-6.
@@ -331,16 +331,11 @@ sub eq_pdl
 		$got = $got->where($isgood);
 		$expected = $expected->where($isgood);
 		# test for exact quality first
-		if( !$got->isempty && !$expected->isempty && not eval { PDL::all( $got == $expected ) } ) {
-			if( $got->type < PDL::float && $expected->type < PDL::float ) {
-				$diag = 'values do not match';
-			}
-			else {
-				# floating-point comparison must be approximate
-				if( not eval { PDL::all( abs($got - $expected) <= $opt->{atol} ) } ) {
-					$diag = 'values do not match';
-				}
-			}
+		if (!$got->isempty && !$expected->isempty &&
+		  !eval { PDL::all( $got == $expected ) } &&
+		  !eval { PDL::all( abs($got - $expected) <= $opt->{atol} ) }
+                ) {
+			$diag = 'values do not match';
 		}
 	}
 	my $ok = $diag ? 0 : 1;

@@ -80,9 +80,9 @@ the values in the %DEFAULTS hash. This can be done directly, by addressing
 
 =item atol
 
-The tolerance used to compare floating-point values. Initially set to 1e-6.
+The tolerance used to compare values. Initially set to 1e-6.
 This is currently an absolute tolerance, meaning that two values compare equal
-if the absolute value of their difference is below the tolerance.
+if the absolute value of their difference is below or equal to the tolerance.
 
 =item require_equal_types
 
@@ -155,7 +155,7 @@ additionally returns a diagnostic string.
 	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
-infrastructure required to write tests with Test::More. It could be used as
+infrastructure required to write tests with L<Test::More>. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites.
@@ -204,9 +204,9 @@ bad flag is different, if there are no bad values.
 
 =item *
 
-And last but not least, the values themselves are examined one by one. For
-integer types, the comparison is performed exactly, whereas an approximate
-equality is used for floating-point types. The approximate comparison is
+And last but not least, the values themselves are examined one by one.
+As of 0.21, both integer and floating-point types are compared approximately.
+The approximate comparison is
 implemented using an absolute tolerance which can be set by supplying an
 argument to C<use Test::PDL>, or by supplying an optional hash to this
 function. By default, the absolute tolerance is 1e-6.
