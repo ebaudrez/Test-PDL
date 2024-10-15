@@ -68,7 +68,7 @@ $expected = long( 4,5,6,-1,8,9 )->inplace->setvaltobad( -1 );
 $got = long( 4,5,6,7,-1,9 )->inplace->setvaltobad( -1 );
 test_out( "not ok 1 - ndarrays are equal" );
 test_fail( +2 );
-test_err( '/#\s+bad value patterns do not match\n(.|\n)*/' );
+test_err( '/#\s+values do not match\n(.|\n)*/' );
 is_pdl( $got, $expected );
 test_test( 'catches bad value pattern mismatch' );
 

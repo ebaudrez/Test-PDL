@@ -327,9 +327,6 @@ sub eq_pdl
   return wantarray ? (0, 'received a non-empty ndarray while expecting an empty one') : 0
     if !$got->isempty and $expected->isempty;
   # both are now non-empty
-  return wantarray ? (0, 'bad value patterns do not match') : 0
-    if ($got->badflag == 1 || $expected->badflag == 1) &&
-      !eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) };
   return wantarray ? (0, 'values do not match') : 0
     if !approx_artol( $got, $expected, @$opt{qw(atol rtol)} )->all;
   return wantarray ? (1, '') : 1;

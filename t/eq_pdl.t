@@ -77,7 +77,7 @@ $expected = long( 4,5,6,-1,8,9 )->inplace->setvaltobad( -1 );
 $got = long( 4,5,6,7,-1,9 )->inplace->setvaltobad( -1 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'catches bad value pattern mismatch';
-is $diag, 'bad value patterns do not match';
+is $diag, 'values do not match';
 
 $expected = long( 4,5,6,7,8,9 );
 $got = long( 4,5,6,7,-8,9 );
