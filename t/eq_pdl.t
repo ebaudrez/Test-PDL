@@ -14,6 +14,8 @@ sub run_eq_pdl
 	return @list;
 }
 
+my $values_not_match = qr/values do not match/;
+
 my ( $got, $expected, $ok, $diag );
 
 ( $ok, $diag ) = run_eq_pdl();
@@ -77,25 +79,25 @@ $expected = long( 4,5,6,-1,8,9 )->inplace->setvaltobad( -1 );
 $got = long( 4,5,6,7,-1,9 )->inplace->setvaltobad( -1 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'catches bad value pattern mismatch';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = long( 4,5,6,7,8,9 );
 $got = long( 4,5,6,7,-8,9 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'catches value mismatches for integer data';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,-8,9 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'catches value mismatches for floating-point data';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.001,9 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'approximate comparison for floating-point data fails correctly at documented default tolerance of 1e-6';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = pdl( 4,5,6,7,8,9 );
 $got = pdl( 4,5,6,7,8.0000001,9 );
@@ -151,7 +153,7 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for long/double';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = short( 0,1,2,3,4 );
 $got = float( 0,1,2.001,3,4 );
@@ -162,7 +164,7 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for float/short';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 $expected = float( 0,-1,2.001,3,49999.998 );
 $got = double( 0,-0.9999,1.999,3,49999.999 );
@@ -173,7 +175,7 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-6, require_equal_types => 0 } );
 ok !$ok, 'fails correctly for double/float';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ################################################################################
 note 'tests with values of significantly different magnitudes, no zeroes';
@@ -182,7 +184,7 @@ $got = double( 1.001e+3, 1.001, 1.001e-3 );
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0.999, rtol => 0 } );
 ok !$ok, 'still fails with an absolute tolerance of 0.999';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1, rtol => 0 } );
 ok $ok, 'passes with an absolute tolerance of 1';
@@ -190,11 +192,11 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-4, rtol => 0 } );
 ok !$ok, 'fails for case with different magnitudes and pure absolute tolerance of 1e-4';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-2, rtol => 0 } );
 ok !$ok, 'still fails with an absolute tolerance of 1e-2';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 10, rtol => 0 } );
 ok $ok, 'needs an absolute tolerance of 10 to pass';
@@ -207,7 +209,7 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-4 } );
 ok !$ok, 'should not pass with a pure relative tolerance of 1e-4';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-2 } );
 ok $ok, 'but passes with a pure relative tolerance of 1e-2';
@@ -220,11 +222,11 @@ $got = double( 1.00001e+3, .99999, 1.00001e-9, 1e-5 );
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-6 } );
 ok !$ok, 'fails at pure relative tolerance of 1e-6';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0, rtol => 1e-4 } );
 ok !$ok, 'but also fails at pure relative tolerance of 1e-4';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1e-4, rtol => 1e-4 } );
 ok $ok, 'needs both absolute and relative tolerances to pass';
@@ -232,7 +234,7 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( double( 1e+3, 1, 0.001, 0 ), $expected, { atol => 1e-4, rtol => 1e-4 } );
 ok !$ok, 'combination of relative and absolute tolerances avoids large relative errors in small components'; # (provided atol is not too high)
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ################################################################################
 note 'test perfect equality';
@@ -286,15 +288,15 @@ is $diag, '';
 
 ( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 0, rtol => 1 } );
 ok !$ok, 'fails correctly just outside of tolerance';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 1, rtol => 0 } );
 ok !$ok, 'fails correctly just outside of tolerance';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ( $ok, $diag ) = run_eq_pdl( double(2.01), double(1), { atol => 1, rtol => 1 } );
 ok !$ok, 'combined tolerances should not yield a larger comparison margin';
-is $diag, 'values do not match';
+like $diag, $values_not_match;
 
 ################################################################################
 note 'miscellaneous';

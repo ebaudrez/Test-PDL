@@ -323,9 +323,10 @@ sub eq_pdl
   return wantarray ? (0, 'received a non-empty ndarray while expecting an empty one') : 0
     if !$got->isempty and $expected->isempty;
   # both are now non-empty
-  return wantarray ? (0, 'values do not match') : 0
-    if !approx_artol( $got, $expected, @$opt{qw(atol rtol)} )->all;
-  return wantarray ? (1, '') : 1;
+  my $res = approx_artol( $got, $expected, @$opt{qw(atol rtol)} );
+  return wantarray ? (1, '') : 1 if $res->all;
+  my $reason = $res->sum.'/'.$expected->nelem.' values do not match';
+  return wantarray ? (0, $reason) : 0;
 }
 
 =head2 test_pdl
