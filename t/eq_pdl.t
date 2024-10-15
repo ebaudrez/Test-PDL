@@ -139,6 +139,7 @@ $got = null;
 ok !$ok, 'null != pdl( ... )';
 is $diag, 'received an empty ndarray while expecting a non-empty one';
 
+################################################################################
 note 'mixed-type comparisons';
 
 $expected = double( 0,1,2.001,3,4 );
@@ -174,6 +175,20 @@ is $diag, '';
 ok !$ok, 'fails correctly for double/float';
 is $diag, 'values do not match';
 
+################################################################################
+note 'tests with values of significantly different magnitudes, no zeroes';
+$expected = double( 1e+3, 1, 1e-3 );
+$got = double( 1.001e+3, 1.001, 1.001e-3 );
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 0.999 } );
+ok !$ok, 'still fails with an absolute tolerance of 0.999';
+is $diag, 'values do not match';
+
+( $ok, $diag ) = run_eq_pdl( $got, $expected, { atol => 1 } );
+ok $ok, 'passes with an absolute tolerance of 1';
+is $diag, '';
+
+################################################################################
 note 'miscellaneous';
 
 $expected = long( 4,5,6,7,8,9 );

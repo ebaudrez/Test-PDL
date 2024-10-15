@@ -228,7 +228,7 @@ additionally returns a diagnostic string.
 	my( $equal, $diag ) = eq_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 eq_pdl() contains just the comparison part of is_pdl(), without the
-infrastructure required to write tests with Test::More. It could be used as
+infrastructure required to write tests with L<Test::More>. It could be used as
 part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites.
@@ -281,8 +281,10 @@ And last but not least, the values themselves are examined one by one. For
 integer types, the comparison is performed exactly, whereas an approximate
 equality is used for floating-point types. The approximate comparison is
 implemented using an absolute tolerance which can be set by supplying an
-argument to C<use Test::PDL>, or by supplying an optional hash to this function. By
-default, the absolute tolerance is 1e-6.
+argument to C<use Test::PDL>, or by supplying an optional hash to this
+function. By default, the absolute tolerance is 1e-6.
+Values compare equal if their difference is lower than or equal to the
+absolute tolerance.
 
 =back
 
@@ -342,7 +344,7 @@ sub eq_pdl
 			}
 			else {
 				# floating-point comparison must be approximate
-				if( not eval { PDL::all( abs($got - $expected) < $opt->{atol} ) } ) {
+				if( not eval { PDL::all( abs($got - $expected) <= $opt->{atol} ) } ) {
 					$diag = 'values do not match';
 				}
 			}
