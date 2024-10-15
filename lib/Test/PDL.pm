@@ -303,56 +303,36 @@ tolerances is recommended.
 
 sub eq_pdl
 {
-	my ( $got, $expected, $arg ) = @_;
-	my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
-	PDL::barf( 'need an absolute or a relative tolerance, or both' ) unless defined $opt->{atol} || defined $opt->{rtol};
-	$opt->{atol} //= 0;
-	$opt->{rtol} //= 0;
-	PDL::barf('absolute tolerance cannot be negative') if $opt->{atol} < 0;
-	PDL::barf('relative tolerance cannot be negative') if $opt->{rtol} < 0;
-	my $diag = '';
-	if( not eval { $got->isa('PDL') } ) {
-		$diag = 'received value is not a ndarray';
-	}
-	elsif( not eval { $expected->isa('PDL') } ) {
-		$diag = 'expected value is not a ndarray';
-	}
-	elsif( $opt->{require_equal_types} && $got->type != $expected->type ) {
-		$diag = 'types do not match (\'require_equal_types\' is true)';
-	}
-	elsif( $got->ndims != $expected->ndims ) {
-		$diag = 'dimensions do not match in number';
-	}
-	elsif( not _dimensions_match( [$got->dims], [$expected->dims] ) ) {
-		$diag = 'dimensions do not match in extent';
-	}
-	# evaluating these only makes sense for ndarrays that conform in shape
-	elsif( ( $got->badflag == 1 || $expected->badflag == 1 ) &&
-		not eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) } ) {
-		$diag = 'bad value patterns do not match';
-	}
-	elsif( $got->isempty and !$expected->isempty ) {
-		$diag = 'received an empty ndarray while expecting a non-empty one';
-	}
-	elsif( !$got->isempty and $expected->isempty ) {
-		$diag = 'received a non-empty ndarray while expecting an empty one';
-	}
-	# only compare when both ndarrays are nonempty, because two empty
-	# ndarrays are guaranteed to match
-	elsif( !$got->isempty and !$expected->isempty ) {
-		# if we get here, bad value patterns are sure to match, remove
-		my $isgood = $got->isgood;
-		$got = $got->where($isgood);
-		$expected = $expected->where($isgood);
-		# test for exact quality first
-		if (!$got->isempty && !$expected->isempty &&
-		  !approx_artol( $got, $expected, @$opt{qw(atol rtol)} )->all
-                ) {
-			$diag = 'values do not match';
-		}
-	}
-	my $ok = $diag ? 0 : 1;
-	return wantarray ? ($ok, $diag) : $ok;
+  my ( $got, $expected, $arg ) = @_;
+  my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
+  PDL::barf( 'need an absolute or a relative tolerance, or both' ) unless defined $opt->{atol} || defined $opt->{rtol};
+  $opt->{atol} //= 0;
+  $opt->{rtol} //= 0;
+  PDL::barf('absolute tolerance cannot be negative') if $opt->{atol} < 0;
+  PDL::barf('relative tolerance cannot be negative') if $opt->{rtol} < 0;
+  return wantarray ? (0, 'received value is not a ndarray') : 0
+    if !eval { $got->isa('PDL') };
+  return wantarray ? (0, 'expected value is not a ndarray') : 0
+    if !eval { $expected->isa('PDL') };
+  return wantarray ? (0, 'types do not match (\'require_equal_types\' is true)') : 0
+    if $opt->{require_equal_types} && $got->type != $expected->type;
+  return wantarray ? (0, 'dimensions do not match in number') : 0
+    if $got->ndims != $expected->ndims;
+  return wantarray ? (0, 'dimensions do not match in extent') : 0
+    if not _dimensions_match([$got->dims], [$expected->dims]);
+  return wantarray ? (1, '') : 1
+    if $got->isempty and $expected->isempty;
+  return wantarray ? (0, 'received an empty ndarray while expecting a non-empty one') : 0
+    if $got->isempty and !$expected->isempty;
+  return wantarray ? (0, 'received a non-empty ndarray while expecting an empty one') : 0
+    if !$got->isempty and $expected->isempty;
+  # both are now non-empty
+  return wantarray ? (0, 'bad value patterns do not match') : 0
+    if ($got->badflag == 1 || $expected->badflag == 1) &&
+      !eval { PDL::all( PDL::isbad($got) == PDL::isbad($expected) ) };
+  return wantarray ? (0, 'values do not match') : 0
+    if !approx_artol( $got, $expected, @$opt{qw(atol rtol)} )->all;
+  return wantarray ? (1, '') : 1;
 }
 
 =head2 test_pdl
