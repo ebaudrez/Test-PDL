@@ -338,11 +338,10 @@ sub eq_pdl
 			# [todo] we don't have tests that test this ...
 			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
 		}
-		elsif( !$got->isempty && !$expected->isempty ) {
+		# test for exact quality first
+		elsif( !$got->isempty && !$expected->isempty && not eval { PDL::all( $got == $expected ) } ) {
 			if( $got->type < PDL::float && $expected->type < PDL::float ) {
-				if( not eval { PDL::all( $got == $expected ) } ) {
-					$diag = 'values do not match';
-				}
+				$diag = 'values do not match';
 			}
 			else {
 				# floating-point comparison must be approximate
