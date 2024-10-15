@@ -294,6 +294,8 @@ sub eq_pdl
 {
 	my ( $got, $expected, $arg ) = @_;
 	my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
+	$opt->{atol} //= 0;
+	PDL::barf('absolute tolerance cannot be negative') if $opt->{atol} < 0;
 	my $diag = '';
 	if( not eval { $got->isa('PDL') } ) {
 		$diag = 'received value is not a ndarray';
