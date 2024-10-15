@@ -330,16 +330,8 @@ sub eq_pdl
 		my $isgood = $got->isgood;
 		$got = $got->where($isgood);
 		$expected = $expected->where($isgood);
-		if( $got->isempty && !$expected->isempty ) {
-			# [todo] we don't have tests that test this ...
-			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
-		}
-		elsif( !$got->isempty && $expected->isempty ) {
-			# [todo] we don't have tests that test this ...
-			$diag = 'one ndarray is empty while the other is not, after removal of bad values';
-		}
 		# test for exact quality first
-		elsif( !$got->isempty && !$expected->isempty && not eval { PDL::all( $got == $expected ) } ) {
+		if( !$got->isempty && !$expected->isempty && not eval { PDL::all( $got == $expected ) } ) {
 			if( $got->type < PDL::float && $expected->type < PDL::float ) {
 				$diag = 'values do not match';
 			}
