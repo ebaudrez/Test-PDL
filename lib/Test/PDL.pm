@@ -204,17 +204,13 @@ sub is_pdl
 	$name ||= $opt->{test_name};
 	$name ||= "ndarrays are equal";
 	my( $ok, $reason ) = eq_pdl($got, $expected, $opt);
-	if( !$ok ) {
-		my $rc = $tb->ok( 0, $name );
-		my $fmt = '%-8T %-12D (%-5S) ';
-		$tb->diag( "    $reason\n",
-			   "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
-			   "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected );
-		return $rc;
-	}
-	else {
-		return $tb->ok( 1, $name );
-	}
+	return $tb->ok( 1, $name ) if $ok;
+	my $rc = $tb->ok( 0, $name );
+	my $fmt = '%-8T %-12D (%-5S) ';
+	$tb->diag( "    $reason\n",
+		   "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
+		   "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected );
+	return $rc;
 }
 
 =head2 eq_pdl
