@@ -39,7 +39,7 @@ package Test::PDL;
 	#
 	#   Failed test 'demonstrate the output of a failing deep comparison'
 	#   at maint/pod.t line 30.
-	# Comparing $data->{"data"} as a ndarray:
+	# Comparing $data->{"data"} as an ndarray:
 	# dimensions do not match in extent
 	#    got : Long     D [3]        (P    ) [17 0 1]
 	# expect : Long     D [4]        (P    ) [17 0 0 1]
@@ -145,7 +145,7 @@ sub import
 
 =for ref # PDL
 
-Run a test comparing a ndarray to an expected ndarray, and fail with detailed
+Run a test comparing an ndarray to an expected ndarray, and fail with detailed
 diagnostics if they don't compare equal.
 
 =for usage # PDL
@@ -156,7 +156,7 @@ diagnostics if they don't compare equal.
 	is_pdl( $got, $expected, { atol => $absolute_tolerance, ... } );
 
 Yields ok if the first two arguments are ndarrays that compare equal, not ok if
-the ndarrays are different, or if at least one is not a ndarray. Prints a
+the ndarrays are different, or if at least one is not an ndarray. Prints a
 diagnostic when the comparison fails, with the reason and a brief printout of
 both arguments. See the documentation of eq_pdl() for the comparison
 criteria. $test_name is optional.
@@ -171,7 +171,7 @@ sub is_pdl
 	my ( $got, $expected, $arg ) = @_;
 	my $tb = Test::Builder->new;
 	if( eval { $arg->isa('PDL') } ) {
-		$tb->croak( 'error in arguments: third argument is a ndarray' );
+		$tb->croak( 'error in arguments: third argument is an ndarray' );
 	}
 	my $opt = { %DEFAULTS };
 	my $name;
@@ -241,9 +241,9 @@ compares equal with another two-dimensional ndarray.
 =item *
 
 The extent of the dimensions are compared one by one and must match. That is, a
-ndarray with dimensions (5,4) cannot compare equal with a ndarray of dimensions
+ndarray with dimensions (5,4) cannot compare equal with an ndarray of dimensions
 (5,3). Note that degenerate dimensions are not treated specially, and thus a
-ndarray with dimensions (5,4,1) is considered different from a ndarray with
+ndarray with dimensions (5,4,1) is considered different from an ndarray with
 dimensions (5,4).
 
 =item *
@@ -284,9 +284,9 @@ sub eq_pdl
   $opt->{rtol} //= 0;
   PDL::barf('absolute tolerance cannot be negative') if $opt->{atol} < 0;
   PDL::barf('relative tolerance cannot be negative') if $opt->{rtol} < 0;
-  return wantarray ? (0, 'received value is not a ndarray') : 0
+  return wantarray ? (0, 'received value is not an ndarray') : 0
     if !eval { $got->isa('PDL') };
-  return wantarray ? (0, 'expected value is not a ndarray') : 0
+  return wantarray ? (0, 'expected value is not an ndarray') : 0
     if !eval { $expected->isa('PDL') };
   return wantarray ? (0, 'types do not match (\'require_equal_types\' is true)') : 0
     if $opt->{require_equal_types} && $got->type != $expected->type;
@@ -358,7 +358,7 @@ same thing with
 
 but the diagnostics provided by test_pdl() are better, and it's easier to use.
 test_pdl() accepts the same arguments as the PDL constructor pdl() does. If you
-need to compare a ndarray with a type different from the default type, use one
+need to compare an ndarray with a type different from the default type, use one
 of the provided test_byte(), test_short(), test_long(), etc.:
 
 	my $expected = { data => test_short( -4,-9,13 ) };

@@ -20,30 +20,30 @@ my ( $got, $expected, $ok, $diag );
 
 ( $ok, $diag ) = run_eq_pdl();
 ok !$ok, 'rejects missing arguments';
-is $diag, 'received value is not a ndarray';
+is $diag, 'received value is not an ndarray';
 
 $got = pdl( 9,-10 );
 ( $ok, $diag ) = run_eq_pdl( $got );
 ok !$ok, 'rejects missing arguments';
-is $diag, 'expected value is not a ndarray';
+is $diag, 'expected value is not an ndarray';
 
 $expected = 3;
 $got = 4;
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
-ok !$ok, 'rejects non-piddle arguments';
-is $diag, 'received value is not a ndarray';
+ok !$ok, 'rejects non-ndarray arguments';
+is $diag, 'received value is not an ndarray';
 
 $expected = 3;
 $got = long( 3,4 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
-ok !$ok, 'rejects non-piddle arguments';
-is $diag, 'expected value is not a ndarray';
+ok !$ok, 'rejects non-ndarray arguments';
+is $diag, 'expected value is not an ndarray';
 
 $expected = short( 1,2 );
 $got = -2;
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
-ok !$ok, 'rejects non-piddle arguments';
-is $diag, 'received value is not a ndarray';
+ok !$ok, 'rejects non-ndarray arguments';
+is $diag, 'received value is not an ndarray';
 
 $expected = long( 3,4 );
 $got = pdl( 3,4 );
