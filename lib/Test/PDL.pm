@@ -141,16 +141,6 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
-sub _dimensions_match
-{
-	my @A = @{ +shift };
-	my @B = @{ +shift };
-	while( my $a = shift @A and my $b = shift @B ) {
-		if( $a != $b ) { return 0 }
-	}
-	return 1;
-}
-
 =head2 is_pdl
 
 =for ref # PDL
@@ -300,16 +290,16 @@ sub eq_pdl
     if !eval { $expected->isa('PDL') };
   return wantarray ? (0, 'types do not match (\'require_equal_types\' is true)') : 0
     if $opt->{require_equal_types} && $got->type != $expected->type;
+  my @got_dims = $got->dims;
+  my @exp_dims = $expected->dims;
   return wantarray ? (0, 'dimensions do not match in number') : 0
-    if $got->ndims != $expected->ndims;
-  return wantarray ? (0, 'dimensions do not match in extent') : 0
-    if not _dimensions_match([$got->dims], [$expected->dims]);
+    if @got_dims != @exp_dims;
+  while (@got_dims) {
+    return wantarray ? (0, 'dimensions do not match in extent') : 0
+      if shift(@got_dims) != shift(@exp_dims);
+  }
   return wantarray ? (1, '') : 1
     if $got->isempty and $expected->isempty;
-  return wantarray ? (0, 'received an empty ndarray while expecting a non-empty one') : 0
-    if $got->isempty and !$expected->isempty;
-  return wantarray ? (0, 'received a non-empty ndarray while expecting an empty one') : 0
-    if !$got->isempty and $expected->isempty;
   # both are now non-empty
   my $res = approx_artol( $got, $expected, @$opt{qw(atol rtol)} );
   return wantarray ? (1, '') : 1 if $res->all;

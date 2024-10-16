@@ -123,6 +123,12 @@ $got = null;
 ok $ok, 'null == null';
 is $diag, '';
 
+$got = zeroes(0,3);
+$expected = zeroes(0,2);
+( $ok, $diag ) = run_eq_pdl( $got, $expected );
+ok !$ok, 'differently-shaped empties are different';
+is $diag, 'dimensions do not match in extent';
+
 $got = zeroes(0);
 $expected = null;
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
@@ -133,13 +139,13 @@ $expected = null;
 $got = pdl( 1,2,3 );
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'pdl( ... ) != null';
-is $diag, 'received a non-empty ndarray while expecting an empty one';
+is $diag, 'dimensions do not match in extent';
 
 $expected = pdl( 1,2,3 );
 $got = null;
 ( $ok, $diag ) = run_eq_pdl( $got, $expected );
 ok !$ok, 'null != pdl( ... )';
-is $diag, 'received an empty ndarray while expecting a non-empty one';
+is $diag, 'dimensions do not match in extent';
 
 ################################################################################
 note 'mixed-type comparisons';
