@@ -2,6 +2,8 @@ Revision history for Test::PDL
 
 {{$NEXT}}
 
+0.21      2024-10-16
+
  - change default-setting to clearer names, remove set_options
  - add possible options-hash parameter to is_pdl et al
  - change tolerance behaviour from "diff < tol" to "diff <= tol"
