@@ -152,10 +152,12 @@ part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites.
 
-In list context, eq_pdl() returns a list with two elements, the first one being
+In list context, eq_pdl() returns a list with three elements, the first one being
 a boolean whether the ndarrays compared equal, the second being a diagnostic
 string explaining why the comparison failed (or the empty string, if it didn't
-fail). This is useful in combination with L<Test::Deep>, but might also be
+fail). The third is either the mask of not-equal if the values didn't
+match, or C<undef>.
+This is useful in combination with L<Test::Deep>, but might also be
 useful on its own.
 
 eq_pd() does not need L<Test::Builder>, so you can use it as part of something

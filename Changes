@@ -10,6 +10,7 @@ Revision history for Test::PDL
  - fails now give a count of how many values didn't match
  - two differently-shaped empties are now not equal
  - in list context, eq_pdl now also returns approx_artol mask
+ - is_pdl now reports where first 5 values differ, and what they were
 
 0.20      2022-02-26
 

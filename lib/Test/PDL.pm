@@ -182,10 +182,16 @@ sub is_pdl {
   return $tb->ok(1, $name) if $ok;
   my $rc = $tb->ok( 0, $name );
   my $fmt = '%-8T %-12D (%-5S) ';
+  my $coords = defined $mask ? $mask->not->whichND : undef;
+  $coords = $coords->slice(',0:4') if defined $coords and $coords->dim(1) > 5;
   $tb->diag(
     "    $reason\n",
     "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
     "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected,
+    !defined $mask ? () : (
+      "\nFirst <=5 values differ at: ", $coords,
+      "Those 'got' values: ", $got->indexND($coords),
+    ),
   );
   return $rc;
 }
