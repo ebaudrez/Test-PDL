@@ -141,18 +141,6 @@ sub import
 	__PACKAGE__->export_to_level( 1, @_ );
 }
 
-=head2 _dimensions_match
-
-Internal function which compares the extent of each of the dimensions of two
-ndarrays, one by one. The dimensions must be passed in as two array references.
-Returns 1 if all dimensions match pairwise. Returns 0 otherwise.
-
-This function will not operate correctly if the number of dimensions does not
-match between the ndarrays, so be sure to check that before calling this
-function.
-
-=cut
-
 sub _dimensions_match
 {
 	my @A = @{ +shift };
