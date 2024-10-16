@@ -135,7 +135,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_out 'not ok 1';
 	test_fail +5;
 	test_diag 'Comparing $data->{"data"} as an ndarray:',
-		  '2/3 values do not match';
+		  '1/3 values do not match';
 	test_err  '/#    got : Double\s+D\s+\[3\].*/',
 		  '/# expect : Double\s+D\s+\[3\].*/';
 	cmp_deeply $got, $expected;
@@ -146,7 +146,7 @@ for my $vals ( [ 0 ], [ 2,3,0,1,99 ], [ 99,99,99 ] ) {
 	test_err  '/#?\s*/',
 		  '/# PDL=SCALAR\(0x[0-9A-Fa-f]+\)/';
 	test_diag 'and it said',
-		  '2/3 values do not match';
+		  '1/3 values do not match';
 	cmp_deeply $got, { data => code( sub { eq_pdl shift, $pdl2 } ) };
 	test_test '... but the diagnostics are better than with code()';
 }

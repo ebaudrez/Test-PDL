@@ -309,7 +309,8 @@ sub eq_pdl {
   # both are now non-empty
   my $res = approx_artol( $got, $expected, @$opt{qw(atol rtol)} );
   return wantarray ? (1, '', undef) : 1 if $res->all;
-  my $reason = $res->sum.'/'.$expected->nelem.' values do not match';
+  my $exp_nelem = $expected->nelem;
+  my $reason = ($exp_nelem-$res->sum)."/$exp_nelem values do not match";
   return wantarray ? (0, $reason, $res) : 0;
 }
 
