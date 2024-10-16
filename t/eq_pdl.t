@@ -9,7 +9,7 @@ sub run_eq_pdl
 {
 	my $scalar = eq_pdl(@_);
 	my @list = eq_pdl(@_);
-	cmp_ok(scalar @list, '==', 2, 'eq_pdl() returns a list with two elements in list context');
+	cmp_ok(scalar @list, '==', 3, 'eq_pdl() returns a list with two elements in list context');
 	cmp_ok $scalar, '==', $list[0], '... and first element matches the return value in scalar context';
 	return @list;
 }

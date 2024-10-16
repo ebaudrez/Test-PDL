@@ -165,30 +165,29 @@ Named after is() from L<Test::More>.
 
 =cut
 
-sub is_pdl
-{
-	require Test::Builder;
-	my ( $got, $expected, $arg ) = @_;
-	my $tb = Test::Builder->new;
-	if( eval { $arg->isa('PDL') } ) {
-		$tb->croak( 'error in arguments: third argument is an ndarray' );
-	}
-	my $opt = { %DEFAULTS };
-	my $name;
-	if( $arg ) {
-		if( ref $arg eq 'HASH' ) { $opt = { %$opt, %$arg } }
-		else { $name = $arg }
-	}
-	$name ||= $opt->{test_name};
-	$name ||= "ndarrays are equal";
-	my( $ok, $reason ) = eq_pdl($got, $expected, $opt);
-	return $tb->ok( 1, $name ) if $ok;
-	my $rc = $tb->ok( 0, $name );
-	my $fmt = '%-8T %-12D (%-5S) ';
-	$tb->diag( "    $reason\n",
-		   "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
-		   "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected );
-	return $rc;
+sub is_pdl {
+  require Test::Builder;
+  my ( $got, $expected, $arg ) = @_;
+  my $tb = Test::Builder->new;
+  $tb->croak('error in arguments: third argument is an ndarray')
+    if eval { $arg->isa('PDL') };
+  my $opt = { %DEFAULTS };
+  my $name;
+  if ($arg) {
+    if (ref $arg eq 'HASH') { $opt = { %$opt, %$arg } }
+    else { $name = $arg }
+  }
+  $name ||= $opt->{test_name} || "ndarrays are equal";
+  my ($ok, $reason, $mask) = eq_pdl($got, $expected, $opt);
+  return $tb->ok(1, $name) if $ok;
+  my $rc = $tb->ok( 0, $name );
+  my $fmt = '%-8T %-12D (%-5S) ';
+  $tb->diag(
+    "    $reason\n",
+    "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
+    "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected,
+  );
+  return $rc;
 }
 
 =head2 eq_pdl
@@ -211,10 +210,12 @@ part of a larger test in which the equality of two ndarrays must be verified. By
 itself, eq_pdl() does not generate any output, so it should be safe to use
 outside test suites.
 
-In list context, eq_pdl() returns a list with two elements, the first one being
+In list context, eq_pdl() returns a list with three elements, the first one being
 a boolean whether the ndarrays compared equal, the second being a diagnostic
 string explaining why the comparison failed (or the empty string, if it didn't
-fail). This is useful in combination with L<Test::Deep>, but might also be
+fail). The third is either the mask of not-equal if the values didn't
+match, or C<undef>.
+This is useful in combination with L<Test::Deep>, but might also be
 useful on its own.
 
 eq_pd() does not need L<Test::Builder>, so you can use it as part of something
@@ -275,36 +276,35 @@ tolerances is recommended.
 
 =cut
 
-sub eq_pdl
-{
-  my ( $got, $expected, $arg ) = @_;
+sub eq_pdl {
+  my ($got, $expected, $arg) = @_;
   my $opt = { %DEFAULTS, ref $arg eq 'HASH' ? %$arg : () };
   PDL::barf( 'need an absolute or a relative tolerance, or both' ) unless defined $opt->{atol} || defined $opt->{rtol};
   $opt->{atol} //= 0;
   $opt->{rtol} //= 0;
   PDL::barf('absolute tolerance cannot be negative') if $opt->{atol} < 0;
   PDL::barf('relative tolerance cannot be negative') if $opt->{rtol} < 0;
-  return wantarray ? (0, 'received value is not an ndarray') : 0
+  return wantarray ? (0, 'received value is not an ndarray', undef) : 0
     if !eval { $got->isa('PDL') };
-  return wantarray ? (0, 'expected value is not an ndarray') : 0
+  return wantarray ? (0, 'expected value is not an ndarray', undef) : 0
     if !eval { $expected->isa('PDL') };
-  return wantarray ? (0, 'types do not match (\'require_equal_types\' is true)') : 0
+  return wantarray ? (0, 'types do not match (\'require_equal_types\' is true)', undef) : 0
     if $opt->{require_equal_types} && $got->type != $expected->type;
   my @got_dims = $got->dims;
   my @exp_dims = $expected->dims;
-  return wantarray ? (0, 'dimensions do not match in number') : 0
+  return wantarray ? (0, 'dimensions do not match in number', undef) : 0
     if @got_dims != @exp_dims;
   while (@got_dims) {
-    return wantarray ? (0, 'dimensions do not match in extent') : 0
+    return wantarray ? (0, 'dimensions do not match in extent', undef) : 0
       if shift(@got_dims) != shift(@exp_dims);
   }
-  return wantarray ? (1, '') : 1
+  return wantarray ? (1, '', undef) : 1
     if $got->isempty and $expected->isempty;
   # both are now non-empty
   my $res = approx_artol( $got, $expected, @$opt{qw(atol rtol)} );
-  return wantarray ? (1, '') : 1 if $res->all;
+  return wantarray ? (1, '', undef) : 1 if $res->all;
   my $reason = $res->sum.'/'.$expected->nelem.' values do not match';
-  return wantarray ? (0, $reason) : 0;
+  return wantarray ? (0, $reason, $res) : 0;
 }
 
 =head2 test_pdl
