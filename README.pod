@@ -33,9 +33,16 @@ version 0.21
 	#
 	#   Failed test 'demonstrate the output of a failing test'
 	#   at maint/pod.t line 16.
-	#     values do not match
+	#     2/5 values do not match
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
+	# First <=5 values differ at:
+	# [
+	#  [1]
+	#  [2]
+	# ]
+	# Those 'got' values: [-1 -2]
+	# Those 'expected' values: [1 2]
 
 	# ndarrays within other data structures can be tested with Test::Deep
 	use Test::Deep qw( cmp_deeply );

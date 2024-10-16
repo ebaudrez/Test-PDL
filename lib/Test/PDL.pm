@@ -25,9 +25,16 @@ package Test::PDL;
 	#
 	#   Failed test 'demonstrate the output of a failing test'
 	#   at maint/pod.t line 16.
-	#     values do not match
+	#     2/5 values do not match
 	#          got: Double   D [5]        (P    ) [0 -1 -2 3 4]
 	#     expected: Double   D [5]        (P    ) [0 1 2 3 4]
+	# First <=5 values differ at:
+	# [
+	#  [1]
+	#  [2]
+	# ]
+	# Those 'got' values: [-1 -2]
+	# Those 'expected' values: [1 2]
 
 	# ndarrays within other data structures can be tested with Test::Deep
 	use Test::Deep qw( cmp_deeply );
@@ -182,16 +189,21 @@ sub is_pdl {
   return $tb->ok(1, $name) if $ok;
   my $rc = $tb->ok( 0, $name );
   my $fmt = '%-8T %-12D (%-5S) ';
-  my $coords = defined $mask ? $mask->not->whichND : undef;
-  $coords = $coords->slice(',0:4') if defined $coords and $coords->dim(1) > 5;
+  my @mismatch;
+  if (defined $mask) {
+    my $coords = defined $mask ? $mask->not->whichND : undef;
+    $coords = $coords->slice(',0:4') if defined $coords and $coords->dim(1) > 5;
+    push @mismatch, (
+      "\nFirst <=5 values differ at:", $coords,
+      "Those 'got' values: ", $got->indexND($coords),
+      "\nThose 'expected' values: ", $expected->indexND($coords),
+    );
+  }
   $tb->diag(
     "    $reason\n",
     "         got: ", eval { $got->isa('PDL')      && !$got->isnull      } ? $got->info( $fmt )      : '', $got, "\n",
     "    expected: ", eval { $expected->isa('PDL') && !$expected->isnull } ? $expected->info( $fmt ) : '', $expected,
-    !defined $mask ? () : (
-      "\nFirst <=5 values differ at: ", $coords,
-      "Those 'got' values: ", $got->indexND($coords),
-    ),
+    @mismatch,
   );
   return $rc;
 }
